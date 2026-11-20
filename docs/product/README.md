@@ -37,3 +37,20 @@
 ## Open design items
 
 The design session (after the CI/CD pipeline works) decides navigation, the duck mascot, the colour palette, the SVG icon set and the empty states.
+
+## Scenario format
+
+Each documented flow has a scenario ID and the expected list of domain events (ADR 0008). `make lint-repo` (`scripts/docs-check.sh`) compares the documents with the tests.
+
+In a document in this folder:
+
+```markdown
+### SCN-POMO-001: Complete a focus session
+Events: `pomodoro.started`, `pomodoro.completed`
+```
+
+In a test (PHP or TypeScript), on one line:
+
+```php
+scenario('SCN-POMO-001', ['pomodoro.started', 'pomodoro.completed']);
+```

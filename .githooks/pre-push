@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Git pre-push hook (ADR 0007): no push to main, no force push, branch name, then the fast checks.
+# Git gives the list of refs on stdin. scripts/pre-push-check.sh reads it.
+set -e
+bash scripts/pre-push-check.sh
+exec make --no-print-directory check-fast
