@@ -21,6 +21,10 @@ node_modules/
 # Ansible
 *.retry
 
+# Build output
+dist/
+dev-dist/
+
 # Test, coverage and report output
 coverage/
 .phpunit.cache/

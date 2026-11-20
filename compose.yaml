@@ -43,6 +43,19 @@ services:
     environment: *php-env
     command: ["php", "artisan", "schedule:work"]
 
+  web:
+    image: pond-habits-node:dev
+    build:
+      context: ./frontend
+      target: dev
+      args:
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+    working_dir: /workspace/frontend
+    volumes:
+      - .:/workspace
+    command: ["npm", "run", "dev"]
+
   db:
     image: postgres:18-alpine
     environment:
@@ -77,6 +90,7 @@ services:
       - "127.0.0.1:8080:80"
     depends_on:
       - api
+      - web
 
 volumes:
   db-data:
