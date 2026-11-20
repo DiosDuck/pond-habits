@@ -2,18 +2,27 @@
 # Ports are bound to 127.0.0.1 only, so other machines on the network cannot connect.
 name: pond-habits
 
+x-php: &php
+  image: pond-habits-php:dev
+  build:
+    context: ./backend
+    target: dev
+    args:
+      UID: ${HOST_UID:-1000}
+      GID: ${HOST_GID:-1000}
+  working_dir: /workspace/backend
+  volumes:
+    - .:/workspace
+  depends_on:
+    db:
+      condition: service_healthy
+    mailpit:
+      condition: service_started
+
 services:
   api:
-    build:
-      context: ./backend
-      target: dev
-      args:
-        UID: ${HOST_UID:-1000}
-        GID: ${HOST_GID:-1000}
-    working_dir: /workspace/backend
-    volumes:
-      - .:/workspace
-    environment:
+    <<: *php
+    environment: &php-env
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: "5432"
@@ -23,11 +32,16 @@ services:
       MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
-    depends_on:
-      db:
-        condition: service_healthy
-      mailpit:
-        condition: service_started
+
+  worker:
+    <<: *php
+    environment: *php-env
+    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3"]
+
+  scheduler:
+    <<: *php
+    environment: *php-env
+    command: ["php", "artisan", "schedule:work"]
 
   db:
     image: postgres:18-alpine
@@ -38,6 +52,8 @@ services:
       POSTGRES_PASSWORD: pond
     volumes:
       - db-data:/var/lib/postgresql
+      # Runs only when the volume is new. It makes the test database.
+      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:

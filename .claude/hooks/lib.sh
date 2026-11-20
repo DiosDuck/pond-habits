@@ -36,3 +36,14 @@ is_test_path() {
 is_guard_path() {
   printf '%s' "$1" | grep -qE "$GUARD_RE"
 }
+
+# True when the path is in the last commit (HEAD). A test is "existing" when it is committed.
+# New test files that are not committed yet are not protected, so Claude can finish them.
+is_committed() {
+  local root=${CLAUDE_PROJECT_DIR:-$PWD} p=${1#./}
+  if git -C "$root" rev-parse --verify -q HEAD >/dev/null 2>&1; then
+    git -C "$root" cat-file -e "HEAD:$p" 2>/dev/null
+  else
+    [ -e "$root/$p" ]
+  fi
+}

@@ -1,0 +1,19 @@
+# Static analysis (ADR 0009): Larastan at level max, with strict and deprecation rules.
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - app
+        - bootstrap/app.php
+        - config
+        - database
+        - routes
+        - tests
+    excludePaths:
+        # Pest arch() uses magic methods that PHPStan cannot follow. The arch rules are a declarative list.
+        - tests/Arch
+    tmpDir: storage/framework/cache/phpstan

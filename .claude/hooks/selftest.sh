@@ -7,6 +7,12 @@ fix=$(mktemp -d)
 trap 'rm -rf "$fix"' EXIT
 mkdir -p "$fix/backend/tests/Feature" "$fix/frontend/src" "$fix/.claude/hooks"
 touch "$fix/backend/tests/Feature/HealthTest.php" "$fix/frontend/src/App.test.tsx" "$fix/frontend/src/App.tsx"
+# Commit these files. A test is protected only when it is committed.
+git -C "$fix" init -q
+git -C "$fix" add -A
+git -C "$fix" -c user.name=selftest -c user.email=selftest@example.com commit -q -m fixture
+# A new test that is not committed yet. Claude can still change it.
+touch "$fix/backend/tests/Feature/DraftTest.php"
 
 pass=0
 fail=0
@@ -51,6 +57,8 @@ f 2 Edit backend/tests/Feature/HealthTest.php
 f 2 Write frontend/src/App.test.tsx
 f 0 Write backend/tests/Feature/NewTest.php
 f 0 Edit frontend/src/App.tsx
+f 0 Edit backend/tests/Feature/DraftTest.php
+b 0 'rm backend/tests/Feature/DraftTest.php'
 f 2 Edit .claude/settings.json
 f 2 Write .claude/settings.local.json
 f 2 Write .claude/hooks/new.sh

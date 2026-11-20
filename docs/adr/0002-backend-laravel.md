@@ -18,6 +18,7 @@ The owner knows PHP (Symfony, Laminas) and is learning Laravel. Claude writes mo
 
 - Symfony 7 with API Platform: more setup for a small app.
 - Full TypeScript backend: the owner would learn and review in a less familiar language.
+- nginx in place of Caddy: more common, but it needs certbot and a reload for each certificate renewal, and a longer config. Caddy gets and renews the certificates itself. This is one less moving part on one small VPS.
 
 ## Consequences
 

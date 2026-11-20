@@ -9,6 +9,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 FROM base AS dev
 
+# PCOV measures test coverage. Only the dev image has it.
+RUN install-php-extensions pcov
+
 # Run as a user with the same UID and GID as the developer on the host.
 # Then files that the container makes in the bind mount belong to the developer.
 ARG UID=1000
