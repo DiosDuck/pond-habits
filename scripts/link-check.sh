@@ -29,5 +29,5 @@ while IFS= read -r f; do
     fi
   done < <(awk '/^[[:space:]]*```/ { code = !code; next } !code' "$f" |
     grep -oE '\]\([^)]+\)' | sed -E 's/^\]\((.*)\)$/\1/' || true)
-done < <(git ls-files '*.md' | grep -v '^docs/generated/')
+done < <(git ls-files --cached --others --exclude-standard '*.md' | grep -v '^docs/generated/')
 exit "$fail"

@@ -19,7 +19,10 @@ tests=$(mktemp)
 trap 'rm -f "$docs" "$tests"' EXIT
 
 # Documents: "ID|event1,event2". The Events: line must come after the heading with the ID.
-for f in $(git ls-files 'docs/product/*.md' 'docs/product/**/*.md'); do
+# Tracked and new (untracked) files, so that a local run sees the same as CI after the commit.
+files() { git ls-files --cached --others --exclude-standard "$@"; }
+
+for f in $(files 'docs/product/*.md' 'docs/product/**/*.md'); do
   awk -v re="$ID_RE" '
     /^[[:space:]]*```/ { code = !code; next }
     code { next }
@@ -31,8 +34,11 @@ for f in $(git ls-files 'docs/product/*.md' 'docs/product/**/*.md'); do
 done | sort > "$docs"
 
 # Tests: "ID|event1,event2".
-git ls-files 'backend/tests/*' 'frontend/src/*' 'frontend/e2e/*' |
-  xargs -r grep -ohE "scenario\(['\"]${ID_RE}['\"],[[:space:]]*\[[^]]*\]" 2> /dev/null |
+# A scenario(...) call in a comment line (*, //, #) is an example, not a test.
+files 'backend/tests/*' 'frontend/src/*' 'frontend/e2e/*' |
+  xargs -r grep -hE "scenario\(['\"]${ID_RE}['\"]" 2> /dev/null |
+  grep -vE '^[[:space:]]*(\*|//|#)' |
+  grep -oE "scenario\(['\"]${ID_RE}['\"],[[:space:]]*\[[^]]*\]" |
   sed -E "s/^scenario\(['\"]([^'\"]+)['\"],[[:space:]]*\[(.*)\]$/\1|\2/; s/['\"[:space:]]//g; s/,$//" |
   sort > "$tests" || true
 

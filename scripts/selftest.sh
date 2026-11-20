@@ -82,6 +82,13 @@ expect 0 "docs-check: matching test passes" bash scripts/docs-check.sh
 printf "<?php\nscenario('SCN-POMO-001', ['pomodoro.completed']);\n" > backend/tests/Feature/PomoTest.php
 git add -A
 expect 1 "docs-check: different events fail" bash scripts/docs-check.sh
+printf "<?php\nscenario('SCN-POMO-001', ['pomodoro.started', 'pomodoro.completed']);\n" > backend/tests/Feature/PomoTest.php
+git add -A
+printf "<?php\n/**\n *     scenario('SCN-DOC-001', ['x.y']);\n */\n// scenario('SCN-DOC-002', ['x.y']);\n" > backend/tests/Feature/CommentTest.php
+expect 0 "docs-check: a scenario call in a comment is only an example" bash scripts/docs-check.sh
+printf "<?php\nscenario('SCN-NEW-001', ['x.y']);\n" > backend/tests/Feature/UntrackedTest.php
+expect 1 "docs-check: an untracked test file is checked too" bash scripts/docs-check.sh
+rm backend/tests/Feature/CommentTest.php backend/tests/Feature/UntrackedTest.php
 git commit -qm "test: scenario"
 
 git switch -qc feat/x

@@ -10,7 +10,12 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-if [ $# -gt 0 ]; then files=("$@"); else mapfile -t files < <(git ls-files); fi
+if [ $# -gt 0 ]; then
+  files=("$@")
+else
+  # Tracked and new (untracked) files, so that a local run sees the same as CI after the commit.
+  mapfile -t files < <(git ls-files --cached --others --exclude-standard)
+fi
 
 deny=$(mktemp)
 trap 'rm -f "$deny"' EXIT
