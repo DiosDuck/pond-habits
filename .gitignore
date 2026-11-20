@@ -1,0 +1,30 @@
+# Private, local-only notes. Never commit. See docs/adr/0023-public-repo-content.md
+/local/
+
+# Environment files and keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local Claude Code settings (can contain local paths)
+# Third-party skills (other licences). Keep them local.
+.claude/skills/grilling/
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Dependencies
+vendor/
+node_modules/
+
+# Ansible
+*.retry
+
+# Test, coverage and report output
+coverage/
+.phpunit.cache/
+playwright-report/
+test-results/
+reports/
+.lighthouseci/
