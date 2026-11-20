@@ -1,0 +1,20 @@
+{
+  "name": "Pond Habits",
+  "dockerComposeFile": ["../compose.yaml"],
+  "service": "api",
+  "runServices": ["api", "db", "mailpit", "caddy"],
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "none",
+  "remoteUser": "dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}
