@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
 use App\Support\DomainEvents\LogDomainEventLog;
 use Dedoc\Scramble\Scramble;
@@ -29,6 +30,7 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Local: Scramble always allows the docs. Staging: allowed here, and Caddy limits it to the tailnet.
-        Gate::define('viewApiDocs', fn (): bool => $this->app->environment('staging'));
+        // The nullable $user lets Laravel call the gate for guests. Without it, guests are always denied.
+        Gate::define('viewApiDocs', fn (?User $user = null): bool => $this->app->environment('staging'));
     }
 }

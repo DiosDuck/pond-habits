@@ -85,12 +85,31 @@ services:
     volumes:
       - ./infra/caddy/Caddyfile.local:/etc/caddy/Caddyfile:ro
       - ./backend:/workspace/backend:ro
+      - ./frontend:/workspace/frontend:ro
       - caddy-data:/data
     ports:
       - "127.0.0.1:8080:80"
+      - "127.0.0.1:8081:81"
     depends_on:
       - api
       - web
+
+  # End-to-end tests and Lighthouse (ADR 0008, ADR 0009). Not started by "make up".
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
+    profiles: ["tools"]
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    working_dir: /workspace/frontend
+    volumes:
+      - .:/workspace
+    environment:
+      HOME: /tmp
+      BASE_URL: http://caddy
+      CI: ${CI:-}
+    ipc: host
+    depends_on:
+      caddy:
+        condition: service_started
 
 volumes:
   db-data:
