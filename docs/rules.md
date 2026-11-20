@@ -22,6 +22,8 @@ Each rule has an enforcement type. Try to have as few "review" rules as possible
 | Do not commit personal or workstation data. See ADR 0023. | hook + CI (sensitive-pattern check) + Claude rule |
 | If a secret leaks, rotate it. Do not rewrite history. | review |
 | Only the owner pushes. Claude does not run `git push`. | Claude hook |
+| Claude does not skip the git hooks (`--no-verify`, `commit -n`, `core.hooksPath`). | Claude hook |
+| Claude does not change the guardrail files (`.claude/settings*.json`, `.claude/hooks/`, `.githooks/`). | Claude hook |
 | No GitHub CLI or API scripts. GitHub admin is done in the web UI. | review |
 
 ## Tests
