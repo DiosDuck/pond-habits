@@ -4,7 +4,12 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-if [ $# -gt 0 ]; then files=("$@"); else mapfile -t files < <(git ls-files '*.md'); fi
+if [ $# -gt 0 ]; then
+  files=("$@")
+else
+  # Tracked and new (untracked) files, so that a local run sees the same as CI after the commit.
+  mapfile -t files < <(git ls-files --cached --others --exclude-standard '*.md')
+fi
 
 fail=0
 for f in "${files[@]}"; do
