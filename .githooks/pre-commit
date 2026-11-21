@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Git pre-commit hook (ADR 0007): checks on the staged files only. Target: less than 15 seconds.
+# The logic is in scripts/pre-commit-check.sh. Turn the hooks on with "make hooks".
+exec make --no-print-directory hook-pre-commit

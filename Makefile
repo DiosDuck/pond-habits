@@ -17,7 +17,7 @@ E2E := $(COMPOSE) run --rm e2e
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
-	build-frontend e2e lighthouse mutation
+	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -30,6 +30,10 @@ setup: ## First run after a clone: install the packages, make backend/.env, migr
 	test -f backend/.env || (cp backend/.env.example backend/.env && $(PHP) php artisan key:generate)
 	$(NODE) npm ci
 	$(PHP) php artisan migrate --no-interaction
+	$(MAKE) hooks
+
+hooks: ## Turn on the git hooks in .githooks/ (pre-commit, commit-msg, pre-push)
+	git config core.hooksPath .githooks
 
 up: ## Build and start the local stack, then wait until it is ready
 	$(COMPOSE) up -d --build --wait
@@ -73,7 +77,7 @@ test-backend:
 test-frontend:
 	$(NODE) npm run -s test
 
-lint: lint-backend lint-frontend ## Run all format checks and static analysis
+lint: lint-backend lint-frontend lint-repo ## Run all format checks and static analysis
 
 lint-backend:
 	$(PHP) sh -c 'composer validate --strict --no-check-publish \
@@ -105,6 +109,21 @@ mutation: ## Run the mutation tests (60% or more). CI runs them nightly.
 	$(PHP) ./vendor/bin/pest --mutate --everything --min=60
 	$(NODE) npm run -s mutation
 
+lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, scenarios
+	bash scripts/md-line-limit.sh
+	bash scripts/link-check.sh
+	bash scripts/sensitive-check.sh
+	bash scripts/docs-check.sh
+
+test-guard: ## Fail if this branch changes an existing test (compared with origin/main)
+	bash scripts/test-guard.sh origin/main
+
+deps-check: ## List the new packages on this branch (the PR needs a "Why this package" line)
+	bash scripts/new-deps-check.sh origin/main
+
+hook-pre-commit:
+	bash scripts/pre-commit-check.sh
+
 # Only files that are changed or new (not committed) are formatted. Committed tests stay as they are.
 fix: ## Format the changed files that are not committed yet
 	$(PHP) ./vendor/bin/pint --dirty
@@ -116,6 +135,7 @@ check-fast: lint ## The fast checks (the pre-push hook runs this)
 check: ## Run all checks
 	$(COMPOSE) config --quiet
 	bash .claude/hooks/selftest.sh
+	bash scripts/selftest.sh
 	$(MAKE) lint
 	$(MAKE) test
 	$(MAKE) lighthouse
