@@ -34,8 +34,8 @@ check_path() {
     case "$tok" in
       *'*'* | *'?'*) block "the command can change existing tests ('$rel'). Do not change tests (ADR 0008)." ;;
     esac
-    if [ -e "$tok" ]; then
-      block "the command changes the existing test '$rel'. Do not change tests (ADR 0008)."
+    if is_committed "$rel"; then
+      block "the command changes the committed test '$rel'. Do not change tests (ADR 0008)."
     fi
   fi
 }

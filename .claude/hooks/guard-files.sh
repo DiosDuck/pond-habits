@@ -16,14 +16,8 @@ if is_guard_path "$rel"; then
   block "'$rel' is a guardrail file. Only the owner changes it. Write the change as text for the owner."
 fi
 
-if is_test_path "$rel"; then
-  case "$path" in
-    /*) abs=$path ;;
-    *) abs="${CLAUDE_PROJECT_DIR:-$PWD}/$path" ;;
-  esac
-  if [ -e "$abs" ]; then
-    block "'$rel' is an existing test. Do not change it (ADR 0008). Add a new test file, or ask the owner."
-  fi
+if is_test_path "$rel" && is_committed "$rel"; then
+  block "'$rel' is a committed test. Do not change it (ADR 0008). Add a new test file, or ask the owner."
 fi
 
 exit 0

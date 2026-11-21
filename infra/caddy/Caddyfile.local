@@ -6,7 +6,7 @@
 }
 
 :80 {
-	@backend path /api/* /sanctum/* /docs/* /health /up
+	@backend path /api/* /sanctum/* /docs/* /health
 	handle @backend {
 		root * /workspace/backend/public
 		php_fastcgi api:9000
