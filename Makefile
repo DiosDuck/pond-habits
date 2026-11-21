@@ -11,13 +11,16 @@ COMPOSE := docker compose
 PHP := $(COMPOSE) run --rm -e COMPOSER_HOME=/tmp/composer api
 # Run a command in a new web container, with no other services.
 NODE := $(COMPOSE) run --rm --no-deps -e npm_config_update_notifier=false web
+# Run a command in the Playwright image (Chromium, WebKit). It needs the running stack.
+E2E := $(COMPOSE) run --rm e2e
 
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
-	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast
+	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
+	build-frontend e2e lighthouse mutation
 
 help: ## Show this list
-	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
+	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
 ## Stack
 
@@ -87,6 +90,21 @@ lint-frontend:
 		&& npm run -s knip \
 		&& npm run -s depcruise'
 
+build-frontend: ## Build the frontend, then check the bundle budget and the PWA fields
+	$(NODE) sh -c 'npm run -s build && npm run -s check:build'
+
+e2e: ## Run the end-to-end tests (mobile viewports, axe) against the running stack
+	$(COMPOSE) up -d --wait
+	$(E2E) npx playwright test
+
+lighthouse: build-frontend ## Run Lighthouse on the production build (http://localhost:8081)
+	$(COMPOSE) up -d --wait
+	$(E2E) sh -c 'CHROME_PATH=$$(ls -d /ms-playwright/chromium-*/chrome-linux*/chrome | head -1) npx lhci autorun'
+
+mutation: ## Run the mutation tests (60% or more). CI runs them nightly.
+	$(PHP) ./vendor/bin/pest --mutate --everything --min=60
+	$(NODE) npm run -s mutation
+
 # Only files that are changed or new (not committed) are formatted. Committed tests stay as they are.
 fix: ## Format the changed files that are not committed yet
 	$(PHP) ./vendor/bin/pint --dirty
@@ -100,3 +118,5 @@ check: ## Run all checks
 	bash .claude/hooks/selftest.sh
 	$(MAKE) lint
 	$(MAKE) test
+	$(MAKE) lighthouse
+	$(MAKE) e2e

@@ -7,7 +7,16 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  globalIgnores(['dist', 'dev-dist', 'coverage']),
+  globalIgnores([
+    'dist',
+    'dev-dist',
+    'coverage',
+    'reports',
+    'playwright-report',
+    'test-results',
+    '.stryker-tmp',
+    '.lighthouseci',
+  ]),
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
@@ -17,16 +26,15 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        projectService: {
-          // Config files in plain JavaScript are not part of the TypeScript project.
-          allowDefaultProject: ['eslint.config.js', '.dependency-cruiser.cjs'],
-        },
+        // tsconfig.json: the app (browser). tsconfig.node.json: config files and E2E tests (Node).
+        project: ['./tsconfig.json', './tsconfig.node.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
   },
   {
-    files: ['**/*.{js,cjs}'],
+    // Plain JavaScript files (configs, scripts) are not in a TypeScript project.
+    files: ['**/*.{js,cjs,mjs}'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
   },

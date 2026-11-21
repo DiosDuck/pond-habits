@@ -9,15 +9,19 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint --max-warnings=0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "knip": "knip",
     "depcruise": "depcruise src --config .dependency-cruiser.cjs",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "check:build": "node scripts/check-build.mjs",
+    "e2e": "playwright test",
+    "lighthouse": "lhci autorun",
+    "mutation": "stryker run"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.108.2",
@@ -26,10 +30,16 @@
     "react-router": "^8.5.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.16.1",
+    "@playwright/test": "^1.65.1",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",

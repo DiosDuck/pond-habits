@@ -41,11 +41,15 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    // "caddy" is the host name that the E2E tests use inside the Docker network.
+    allowedHosts: ['localhost', 'caddy'],
     // The browser opens the app through Caddy on port 8080 (one origin).
     hmr: { clientPort: 8080 },
   },
   test: {
     environment: 'jsdom',
+    // Only the component tests. The Playwright specs in e2e/ run with "make e2e".
+    include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['src/test/setup.ts'],
     restoreMocks: true,
     coverage: {
