@@ -1,0 +1,67 @@
+# Local development stack. Start it with "make up". See docs/adr/0006-docker-only-development.md.
+# Ports are bound to 127.0.0.1 only, so other machines on the network cannot connect.
+name: pond-habits
+
+services:
+  api:
+    build:
+      context: ./backend
+      target: dev
+      args:
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+    working_dir: /workspace/backend
+    volumes:
+      - .:/workspace
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_DATABASE: pond
+      DB_USERNAME: pond
+      DB_PASSWORD: pond
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      # Local only. Staging and production use secrets (ADR 0012).
+      POSTGRES_DB: pond
+      POSTGRES_USER: pond
+      POSTGRES_PASSWORD: pond
+    volumes:
+      - db-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pond -d pond"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.34
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  caddy:
+    image: caddy:2.11-alpine
+    volumes:
+      - ./infra/caddy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - ./backend:/workspace/backend:ro
+      - caddy-data:/data
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - api
+
+volumes:
+  db-data:
+  caddy-data:

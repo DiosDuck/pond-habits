@@ -1,0 +1,19 @@
+# Local Caddy: one origin (http://localhost:8080) for the API and the frontend.
+# Production has the same layout on one host (ADR 0005).
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	@backend path /api/* /sanctum/* /docs/* /health /up
+	handle @backend {
+		root * /workspace/backend/public
+		php_fastcgi api:9000
+	}
+
+	# The Vite dev server (the "web" service) comes in the frontend PR.
+	handle {
+		reverse_proxy web:5173
+	}
+}
