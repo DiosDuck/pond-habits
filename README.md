@@ -13,6 +13,7 @@ Start at [docs/README.md](docs/README.md).
 The dev setup needs only `docker` (with compose), `git` and `make`. All other tools run in containers.
 
 ```sh
+make setup   # first run after a clone: packages, backend/.env, database
 make up      # build and start the local stack
 make help    # show all commands
 ```

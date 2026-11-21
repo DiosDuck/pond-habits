@@ -12,7 +12,7 @@
 		php_fastcgi api:9000
 	}
 
-	# The Vite dev server (the "web" service) comes in the frontend PR.
+	# The Vite dev server (the "web" service). Vite also serves hot reload over a WebSocket here.
 	handle {
 		reverse_proxy web:5173
 	}

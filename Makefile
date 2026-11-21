@@ -9,15 +9,24 @@ export HOST_UID HOST_GID
 COMPOSE := docker compose
 # Run a command in a new api container. It starts db and mailpit when necessary.
 PHP := $(COMPOSE) run --rm -e COMPOSER_HOME=/tmp/composer api
+# Run a command in a new web container, with no other services.
+NODE := $(COMPOSE) run --rm --no-deps -e npm_config_update_notifier=false web
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps logs build shell migrate seed api-spec \
-	test lint lint-backend fix check check-fast
+.PHONY: help setup up down ps logs build shell migrate seed api-spec \
+	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast
 
 help: ## Show this list
-	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
+	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
 ## Stack
+
+setup: ## First run after a clone: install the packages, make backend/.env, migrate
+	$(COMPOSE) build
+	$(PHP) composer install --no-interaction
+	test -f backend/.env || (cp backend/.env.example backend/.env && $(PHP) php artisan key:generate)
+	$(NODE) npm ci
+	$(PHP) php artisan migrate --no-interaction
 
 up: ## Build and start the local stack, then wait until it is ready
 	$(COMPOSE) up -d --build --wait
@@ -53,10 +62,15 @@ api-spec: ## Write the OpenAPI spec to docs/generated/openapi.json (ADR 0021)
 
 ## Quality
 
-test: ## Run the backend tests with coverage (80% or more)
+test: test-backend test-frontend ## Run all tests with coverage (80% or more)
+
+test-backend:
 	$(PHP) ./vendor/bin/pest --coverage --min=80
 
-lint: lint-backend ## Run all format checks and static analysis
+test-frontend:
+	$(NODE) npm run -s test
+
+lint: lint-backend lint-frontend ## Run all format checks and static analysis
 
 lint-backend:
 	$(PHP) sh -c 'composer validate --strict --no-check-publish \
@@ -66,8 +80,18 @@ lint-backend:
 		&& ./vendor/bin/composer-unused --no-progress \
 		&& ./vendor/bin/composer-require-checker check'
 
-fix: ## Format the changed files that are not committed yet (committed tests stay as they are)
+lint-frontend:
+	$(NODE) sh -c 'npm run -s typecheck \
+		&& npm run -s lint \
+		&& npm run -s format:check \
+		&& npm run -s knip \
+		&& npm run -s depcruise'
+
+# Only files that are changed or new (not committed) are formatted. Committed tests stay as they are.
+fix: ## Format the changed files that are not committed yet
 	$(PHP) ./vendor/bin/pint --dirty
+	files=$$(git ls-files -mo --exclude-standard -- frontend | sed 's#^frontend/##' | grep -E '\.(ts|tsx|js|cjs|json|css|html|md)$$' || true); \
+		if [ -n "$$files" ]; then $(NODE) npx prettier --write $$files; fi
 
 check-fast: lint ## The fast checks (the pre-push hook runs this)
 
