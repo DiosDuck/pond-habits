@@ -15,6 +15,7 @@ Pond Habits is a personal tracker app. It helps a small group of users with dail
 3. [Rules](rules.md): the rules for all work, and how each rule is enforced.
 4. [Privacy](privacy.md): the privacy baseline and its deviations.
 5. [Learning maps](learning/README.md): React for Angular developers, Laravel for Symfony developers.
+6. [CI checks](ci.md): the PR checks, and what to do when one fails.
 
 ## Summary of the stack
 

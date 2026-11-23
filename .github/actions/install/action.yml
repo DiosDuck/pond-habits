@@ -1,0 +1,38 @@
+# Install the packages for a CI job, with a cache (ADR 0012).
+# The packages install in the same containers as on the developer's machine (ADR 0006).
+# The cache key changes when the lockfile or the Dockerfile changes.
+name: Install packages
+description: Restore the package cache, then run "make install-backend" and/or "make install-frontend".
+inputs:
+  backend:
+    description: Install the Composer packages (backend/vendor).
+    default: "false"
+  frontend:
+    description: Install the npm packages (frontend/node_modules).
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Cache backend/vendor
+      if: inputs.backend == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: backend/vendor
+        key: vendor-${{ hashFiles('backend/composer.lock', 'backend/Dockerfile') }}
+    # It also makes backend/.env with a new APP_KEY. With a full cache, "composer install" only checks.
+    - name: Install backend packages
+      if: inputs.backend == 'true'
+      shell: bash
+      run: make install-backend
+    - name: Cache frontend/node_modules
+      id: node-cache
+      if: inputs.frontend == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: frontend/node_modules
+        key: node-modules-${{ hashFiles('frontend/package-lock.json', 'frontend/Dockerfile') }}
+    # "npm ci" deletes node_modules first. So it runs only when the cache has no exact match.
+    - name: Install frontend packages
+      if: inputs.frontend == 'true' && steps.node-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: make install-frontend

@@ -1,0 +1,53 @@
+# PR rules (ADR 0007, ADR 0008, ADR 0010). These checks read the PR title, text and labels.
+# They run again when the owner edits the PR or changes a label, so they are separate from
+# the slow checks in pr.yml. Each job is a required status check on main.
+name: PR rules
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-rules:
+    name: pr-rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the scripts compare the PR with origin/main
+          persist-credentials: false
+      # The PR text goes in through variables, never into the script text.
+      # Then a PR title such as "$(rm -rf /)" stays plain text.
+      - name: Title, branch name, PR boxes
+        run: bash scripts/pr-check.sh origin/main
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+      - name: A "Why this package" line for each new package
+        run: bash scripts/new-deps-check.sh origin/main
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+
+  test-guard:
+    name: test-guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: No change to an existing test without the label tests-change-approved
+        run: bash scripts/test-guard.sh origin/main
+        env:
+          TESTS_CHANGE_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'tests-change-approved') && '1' || '' }}
