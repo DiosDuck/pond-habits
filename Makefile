@@ -17,7 +17,8 @@ E2E := $(COMPOSE) run --rm e2e
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
-	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check
+	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
+	install install-backend install-frontend audit licence-check secrets-scan selftest
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -26,11 +27,18 @@ help: ## Show this list
 
 setup: ## First run after a clone: install the packages, make backend/.env, migrate
 	$(COMPOSE) build
-	$(PHP) composer install --no-interaction
-	test -f backend/.env || (cp backend/.env.example backend/.env && $(PHP) php artisan key:generate)
-	$(NODE) npm ci
+	$(MAKE) install
 	$(PHP) php artisan migrate --no-interaction
 	$(MAKE) hooks
+
+install: install-backend install-frontend ## Install the packages from the lockfiles (CI runs this)
+
+install-backend:
+	$(PHP) composer install --no-interaction --no-progress
+	test -f backend/.env || (cp backend/.env.example backend/.env && $(PHP) php artisan key:generate)
+
+install-frontend:
+	$(NODE) npm ci --no-audit --no-fund
 
 hooks: ## Turn on the git hooks in .githooks/ (pre-commit, commit-msg, pre-push)
 	git config core.hooksPath .githooks
@@ -109,11 +117,29 @@ mutation: ## Run the mutation tests (60% or more). CI runs them nightly.
 	$(PHP) ./vendor/bin/pest --mutate --everything --min=60
 	$(NODE) npm run -s mutation
 
-lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, scenarios
+lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, scenarios, workflows
 	bash scripts/md-line-limit.sh
 	bash scripts/link-check.sh
 	bash scripts/sensitive-check.sh
 	bash scripts/docs-check.sh
+	bash scripts/actions-pin-check.sh
+	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -v "$(CURDIR)":/repo:ro -w /repo \
+		rhysd/actionlint:1.7.12 -no-color
+
+selftest: ## Check that the guard hooks and the check scripts still catch bad input
+	bash .claude/hooks/selftest.sh
+	bash scripts/selftest.sh
+
+audit: ## Fail on high or critical security issues in the packages (ADR 0010)
+	$(PHP) composer audit --locked --no-interaction --abandoned=report
+	$(NODE) npm audit --audit-level=high
+
+licence-check: ## Fail on a package licence that is not on the allow-list (ADR 0010)
+	$(NODE) node ../scripts/licence-check.mjs
+
+secrets-scan: ## Scan all commits for secrets with gitleaks
+	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -e HOME=/tmp -v "$(CURDIR)":/repo:ro \
+		ghcr.io/gitleaks/gitleaks:v8.24.0 git /repo --no-banner --log-level warn --redact
 
 test-guard: ## Fail if this branch changes an existing test (compared with origin/main)
 	bash scripts/test-guard.sh origin/main
@@ -134,9 +160,10 @@ check-fast: lint ## The fast checks (the pre-push hook runs this)
 
 check: ## Run all checks
 	$(COMPOSE) config --quiet
-	bash .claude/hooks/selftest.sh
-	bash scripts/selftest.sh
+	$(MAKE) selftest
 	$(MAKE) lint
+	$(MAKE) audit
+	$(MAKE) licence-check
 	$(MAKE) test
 	$(MAKE) lighthouse
 	$(MAKE) e2e

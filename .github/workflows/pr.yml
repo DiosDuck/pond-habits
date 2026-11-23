@@ -1,0 +1,167 @@
+# PR checks (ADR 0012). Each job is a required status check on main.
+# The jobs run in parallel and call the same make targets as the developer (ADR 0006).
+# CI has no AI step (ADR 0019).
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+
+# The token can only read the repo. No job writes to GitHub.
+permissions:
+  contents: read
+
+# A new push to the same PR stops the old run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+
+jobs:
+  repo-checks:
+    name: repo-checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Self-tests, Markdown, links, sensitive data, scenarios, action pins
+        run: make selftest lint-repo
+        env:
+          SENSITIVE_DENY_LIST: ${{ secrets.SENSITIVE_DENY_LIST }}
+
+  secrets-scan:
+    name: secrets-scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks scans all commits
+          persist-credentials: false
+      - run: make secrets-scan
+
+  lint-backend:
+    name: lint-backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          backend: "true"
+      - name: Composer validate, Pint, PHPStan, Rector, unused and missing packages
+        run: make lint-backend
+
+  lint-frontend:
+    name: lint-frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          frontend: "true"
+      - name: TypeScript, ESLint, Prettier, knip, dependency-cruiser
+        run: make lint-frontend
+
+  test-backend:
+    name: test-backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          backend: "true"
+      # Unit, integration and architecture tests. The integration tests use the real
+      # PostgreSQL and Mailpit containers from compose.yaml.
+      - name: Pest with coverage (80% or more)
+        run: make test-backend
+
+  test-frontend:
+    name: test-frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          frontend: "true"
+      - name: Vitest with coverage (80% or more)
+        run: make test-frontend
+
+  dependencies:
+    name: dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Both read only the lockfiles, so no install is necessary.
+      - name: composer audit and npm audit (fail on high or critical)
+        run: make audit
+      - name: Licence allow-list
+        run: make licence-check
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          backend: "true"
+          frontend: "true"
+      - run: make migrate
+      - name: Playwright (mobile viewports) and axe
+        run: make e2e
+      - name: Keep the Playwright report when the job fails
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+      - name: Show the container logs when the job fails
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          backend: "true"
+          frontend: "true"
+      - run: make migrate
+      - name: Production build, bundle budget, PWA fields, Lighthouse
+        run: make lighthouse
+      - name: Keep the Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse-report
+          path: frontend/reports/lighthouse/
+          retention-days: 7
+          if-no-files-found: ignore

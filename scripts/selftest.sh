@@ -107,6 +107,42 @@ expect 1 "deps: PR text with no reason fails" env PR_BODY="Summary only" bash sc
 expect 0 "deps: PR text with a reason passes" env PR_BODY="## Why these packages
 - left-pad: pads strings" bash scripts/new-deps-check.sh main
 
+# --- pr-check (on branch feat/x: tests and frontend/package.json changed)
+boxes() { # Arguments: "x" or " " for the decision box, then for the scripts box.
+  printf '## Checks\n\n- [%s] This PR changes a recorded decision or the privacy baseline\n' "$1"
+  printf -- '- [%s] This PR changes `scripts/` or `.claude/` (review these diffs closely)\n' "$2"
+}
+ok_title="feat(x): add x"
+expect 0 "pr: good title, branch and boxes pass" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
+expect 1 "pr: free-text title fails" \
+  env PR_TITLE="Added x" PR_BRANCH=feat/x PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
+expect 1 "pr: wrong branch name fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=x PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
+expect 1 "pr: PR text with no boxes fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="Summary" bash scripts/pr-check.sh main
+expect 1 "pr: decision box with no ADR change fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="$(boxes x ' ')" bash scripts/pr-check.sh main
+mkdir -p docs/adr && printf '# ADR 0001\n' > docs/adr/0001-x.md
+printf '# script\n' > scripts/new.sh
+git add -A && git commit -qm "docs: adr"
+expect 1 "pr: ADR change with no decision box fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="$(boxes ' ' x)" bash scripts/pr-check.sh main
+expect 1 "pr: scripts change with no scripts box fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="$(boxes x ' ')" bash scripts/pr-check.sh main
+expect 0 "pr: ADR and scripts changes with both boxes pass" \
+  env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="$(boxes X x)" bash scripts/pr-check.sh main
+
+# --- actions-pin-check
+sha=0123456789abcdef0123456789abcdef01234567
+printf 'steps:\n  - uses: actions/checkout@%s # v7\n  - uses: ./.github/actions/setup\n' "$sha" > good.yml
+printf 'steps:\n  - uses: actions/checkout@v7\n' > bad.yml
+printf 'steps:\n  - uses: "actions/cache@main"\n' > bad2.yml
+expect 0 "pins: SHA and local action pass" bash scripts/actions-pin-check.sh good.yml
+expect 1 "pins: a tag fails" bash scripts/actions-pin-check.sh bad.yml
+expect 1 "pins: a quoted branch fails" bash scripts/actions-pin-check.sh bad2.yml
+rm good.yml bad.yml bad2.yml
+
 # --- pre-push-check
 z=0000000000000000000000000000000000000000
 head=$(git rev-parse HEAD)
