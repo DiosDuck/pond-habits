@@ -4,6 +4,7 @@
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "bump-minor-pre-major": true,
+  "initial-version": "0.1.0",
   "pull-request-title-pattern": "chore: release ${version}",
   "pull-request-footer": "## Why these packages\n\nNone\n\n## Checks\n\n- [ ] This PR changes a recorded decision or the privacy baseline\n- [ ] This PR changes `scripts/` or `.claude/` (review these diffs closely)\n- [ ] This PR changes an existing test (it needs the label `tests-change-approved`, added by the owner)",
   "changelog-sections": [
