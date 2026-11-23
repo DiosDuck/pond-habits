@@ -5,7 +5,7 @@ Pond Habits is a personal tracker app. It helps a small group of users with dail
 - Code slug: `pond-habits`
 - Domain: `pondhabits.com`
 - Licence: MIT. The repository is public.
-- Status: No code exists yet.
+- Status: The app skeleton and the CI/CD pipeline are ready. No product feature exists yet.
 - Decisions recorded on: 2026-11-20
 
 ## Read in this order
