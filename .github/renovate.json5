@@ -18,7 +18,7 @@
   // Wait 3 days after a release. A bad or malicious release is often removed in this time.
   minimumReleaseAge: '3 days',
   prConcurrentLimit: 6,
-  // The tool versions for the lockfile updates. They agree with ADR 0017.
+  // The tool versions for the lockfile updates. They agree with ADR 0017. Renovate does not change them.
   constraints: {
     php: '8.5.*',
     node: '^26',
@@ -73,6 +73,11 @@
       matchPackageNames: ['php', 'node', 'postgres'],
       matchUpdateTypes: ['minor', 'major'],
       dependencyDashboardApproval: true,
+    },
+    {
+      description: 'The tool constraints above change by hand, with the Dockerfile and an ADR 0017 update.',
+      matchManagers: ['renovate-config'],
+      enabled: false,
     },
   ],
   // The tool images in the Makefile (gitleaks, actionlint).
