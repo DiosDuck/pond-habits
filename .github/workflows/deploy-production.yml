@@ -1,0 +1,38 @@
+# Deploy to production (ADR 0012). STUB: Phase 4 adds the real steps.
+# It starts on a tag v* (a merge of the release-please PR makes the tag).
+# Phase 4 gives the "production" environment a required reviewer: the owner approves each deploy.
+name: Deploy production
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy-production
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Plan (stub)
+        run: |
+          tag="sha-${GITHUB_SHA::7}"
+          {
+            echo "## Deploy production $GITHUB_REF_NAME (stub)"
+            echo ""
+            echo "Images: \`api:$tag\`, \`web:$tag\` (the images that staging tested)"
+            echo ""
+            echo "Phase 4 adds these steps:"
+            echo "1. Wait for the owner approval (environment \"production\")."
+            echo "2. Join the tailnet with an ephemeral key."
+            echo "3. Back up the database."
+            echo "4. Pull the images on the server and start them. Run the migrations. No seed."
+            echo "5. Smoke test (GET only). Roll back to the old images on failure."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -23,7 +23,8 @@ export GITLEAKS_IMAGE
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
 	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
-	install install-backend install-frontend audit licence-check secrets-scan selftest images
+	install install-backend install-frontend audit licence-check secrets-scan selftest images \
+	mutation-backend mutation-frontend
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -125,8 +126,12 @@ lighthouse: build-frontend ## Run Lighthouse on the production build (http://loc
 	$(COMPOSE) up -d --wait
 	$(E2E) sh -c 'CHROME_PATH=$$(ls -d /ms-playwright/chromium-*/chrome-linux*/chrome | head -1) npx lhci autorun'
 
-mutation: ## Run the mutation tests (60% or more). CI runs them nightly.
+mutation: mutation-backend mutation-frontend ## Run the mutation tests (60% or more). CI runs them nightly.
+
+mutation-backend:
 	$(PHP) ./vendor/bin/pest --mutate --everything --min=60
+
+mutation-frontend:
 	$(NODE) npm run -s mutation
 
 lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, scenarios, workflows

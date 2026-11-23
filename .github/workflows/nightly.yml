@@ -1,0 +1,65 @@
+# Nightly checks (ADR 0008, ADR 0010, ADR 0012). They are slow, or they find new problems
+# without a code change, so they do not run on each PR.
+# GitHub sends an email to the owner when a scheduled run fails.
+# Note: GitHub turns off schedules in a public repo after 60 days with no commits.
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # each night
+  workflow_dispatch: # the owner can start it by hand (Actions tab, "Run workflow")
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+
+jobs:
+  mutation-backend:
+    name: mutation-backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          backend: "true"
+      - name: Pest mutation tests (60% or more)
+        run: make mutation-backend
+
+  mutation-frontend:
+    name: mutation-frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/install
+        with:
+          frontend: "true"
+      - name: StrykerJS mutation tests (60% or more)
+        run: make mutation-frontend
+      - name: Keep the mutation report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-report-frontend
+          path: frontend/reports/mutation/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # A new security issue can appear in a package that did not change.
+  dependencies:
+    name: dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: composer audit and npm audit (fail on high or critical)
+        run: make audit
