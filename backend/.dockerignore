@@ -1,0 +1,24 @@
+# Files that never go into an image. The prod image copies the backend folder (Dockerfile, "build").
+# Secrets and local files
+.env
+.env.*
+!.env.example
+# Installed in the image
+vendor/
+# Tests, tools and their output
+tests/
+coverage/
+reports/
+.phpunit.cache/
+phpstan.neon
+phpunit.xml
+pint.json
+rector.php
+# Runtime files from local work. The image keeps the empty folders (they have .gitignore files).
+storage/logs/*.log
+storage/framework/cache/data/
+storage/framework/sessions/*
+storage/framework/views/*.php
+storage/framework/testing/
+bootstrap/cache/*.php
+!storage/framework/sessions/.gitignore

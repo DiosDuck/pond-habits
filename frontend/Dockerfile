@@ -1,5 +1,5 @@
 # Node image for the web container (Vite dev server) and the frontend tools.
-# The production build comes in Phase 4.
+# The production build is in the web image (infra/caddy/Dockerfile).
 FROM node:26-alpine AS dev
 
 # Run as a user with the same UID and GID as the developer on the host.

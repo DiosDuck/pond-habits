@@ -18,7 +18,7 @@ E2E := $(COMPOSE) run --rm e2e
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
 	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
-	install install-backend install-frontend audit licence-check secrets-scan selftest
+	install install-backend install-frontend audit licence-check secrets-scan selftest images
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -74,6 +74,13 @@ api-spec: ## Write the OpenAPI spec to docs/generated/openapi.json (ADR 0021)
 	$(PHP) php artisan scramble:export --path=../docs/generated/openapi.json
 
 # "make admin" comes with the accounts feature (Phase 3).
+
+## Images
+
+images: ## Build the prod images (api, web) for this machine, then run the smoke test
+	docker build --target prod -t pond-habits-api:local backend
+	docker build -f infra/caddy/Dockerfile -t pond-habits-web:local .
+	bash scripts/image-smoke.sh pond-habits-api:local pond-habits-web:local
 
 ## Quality
 
@@ -167,3 +174,4 @@ check: ## Run all checks
 	$(MAKE) test
 	$(MAKE) lighthouse
 	$(MAKE) e2e
+	$(MAKE) images
