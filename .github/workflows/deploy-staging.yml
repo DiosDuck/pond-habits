@@ -1,0 +1,44 @@
+# Deploy to staging (ADR 0012). STUB: Phase 4 adds the real steps.
+# It starts when the "Images" workflow is green on main, so the images for this commit exist.
+name: Deploy staging
+
+on:
+  workflow_run:
+    workflows: [Images]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+# One deploy at a time. A newer deploy waits; it does not stop a deploy that runs.
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy-staging
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # The GitHub Environment holds the staging secrets (Phase 4).
+    environment: staging
+    steps:
+      - name: Plan (stub)
+        run: |
+          tag="sha-${HEAD_SHA::7}"
+          {
+            echo "## Deploy staging (stub)"
+            echo ""
+            echo "Images: \`api:$tag\`, \`web:$tag\`"
+            echo ""
+            echo "Phase 4 adds these steps:"
+            echo "1. Join the tailnet with an ephemeral key."
+            echo "2. Pull the images on the server and start them."
+            echo "3. Run the migrations. Seed the demo data with random passwords."
+            echo "4. Smoke test (GET only)."
+            echo "5. OWASP ZAP baseline scan."
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}

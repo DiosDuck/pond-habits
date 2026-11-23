@@ -48,6 +48,30 @@ Both use a token from the project's own GitHub App. See [CI bot](ci-bot.md).
 - `release.yml`: on each merge to `main`. release-please keeps the release PR up to date.
   Its merge makes the tag `v<version>`. Do not merge it before the first deploy (Phase 4).
 
+## Workflow "Nightly" (`.github/workflows/nightly.yml`)
+
+Each night, and by hand. GitHub sends an email to the owner when a run fails.
+
+| Job | Local command | What it checks |
+|---|---|---|
+| `mutation-backend` | `make mutation-backend` | Pest mutation score 60% or more |
+| `mutation-frontend` | `make mutation-frontend` | StrykerJS mutation score 60% or more. The report is an artifact for 14 days. |
+| `dependencies` | `make audit` | New security issues in packages that did not change |
+
+## Deploy workflows (stubs until Phase 4)
+
+- `deploy-staging.yml`: after a green "Images" run on `main`. Environment `staging`.
+- `deploy-production.yml`: on a tag `v*`. Environment `production` (Phase 4 adds the owner approval).
+
+Now they only write the plan in the run summary. They deploy nothing.
+
+## Required checks on `main`
+
+Set these in the branch rules of `main`: `repo-checks`, `secrets-scan`, `lint-backend`, `lint-frontend`,
+`test-backend`, `test-frontend`, `dependencies`, `e2e`, `lighthouse`, `image-build (amd64)`,
+`image-build (arm64)`, `pr-rules`, `test-guard`.
+When you add or rename a PR job, update this list and the branch rules together.
+
 ## The PR boxes
 
 The two boxes in the "Checks" section of the PR template must agree with the diff:
