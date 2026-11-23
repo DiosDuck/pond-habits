@@ -1,0 +1,15 @@
+# Build context of the web image (infra/caddy/Dockerfile, context: the repo root).
+# Allow-list: Docker gets only these paths. local/, .env files and all others stay out.
+*
+!frontend
+!backend/public
+!infra/caddy
+frontend/node_modules
+frontend/dist
+frontend/dev-dist
+frontend/coverage
+frontend/reports
+frontend/playwright-report
+frontend/test-results
+frontend/.lighthouseci
+frontend/.stryker-tmp

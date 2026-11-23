@@ -1,0 +1,126 @@
+# Images (ADR 0012): on each merge to main, build the prod images for amd64 and arm64
+# and push them to GHCR (GitHub Container Registry).
+# Each architecture builds on its own native runner. The "merge" job then joins the two
+# builds into one multi-arch tag, so that "docker pull" gets the right one for each server.
+# Tags: "main" (the newest build) and "sha-<7 characters>" (one commit, for deploys and rollbacks).
+name: Images
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Do not stop a push that is half done. The next run waits.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/diosduck/pond-habits
+
+jobs:
+  build:
+    name: build (${{ matrix.arch }})
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write # push to GHCR
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Push with no tag ("by digest"). The merge job adds the tags.
+      - name: Build and push the api image
+        id: api
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: backend
+          target: prod
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=MIT
+          outputs: type=image,name=${{ env.IMAGE_PREFIX }}/api,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=api-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=api-${{ matrix.arch }}
+      - name: Build and push the web image
+        id: web
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/caddy/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=MIT
+          outputs: type=image,name=${{ env.IMAGE_PREFIX }}/web,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=web-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=web-${{ matrix.arch }}
+      - name: Keep the digests for the merge job
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          printf '%s\n' "$API_DIGEST" > "$RUNNER_TEMP/digests/api-${{ matrix.arch }}"
+          printf '%s\n' "$WEB_DIGEST" > "$RUNNER_TEMP/digests/web-${{ matrix.arch }}"
+        env:
+          API_DIGEST: ${{ steps.api.outputs.digest }}
+          WEB_DIGEST: ${{ steps.web.outputs.digest }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/
+          retention-days: 1
+
+  merge:
+    name: merge
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: digests-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/digests
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Make the multi-arch tags
+        run: |
+          short=${GITHUB_SHA::7}
+          for image in api web; do
+            refs=()
+            for arch in amd64 arm64; do
+              refs+=("$IMAGE_PREFIX/$image@$(cat "$RUNNER_TEMP/digests/$image-$arch")")
+            done
+            docker buildx imagetools create \
+              --annotation "index:org.opencontainers.image.source=$SOURCE" \
+              -t "$IMAGE_PREFIX/$image:main" -t "$IMAGE_PREFIX/$image:sha-$short" "${refs[@]}"
+            docker buildx imagetools inspect "$IMAGE_PREFIX/$image:sha-$short"
+          done
+        env:
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}

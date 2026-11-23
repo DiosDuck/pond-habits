@@ -16,6 +16,7 @@ Each job runs the same `make` target as on the developer's machine ([ADR 0006](a
 | `dependencies` | `make audit licence-check` | Security issues (high or critical) and licences |
 | `e2e` | `make e2e` | Playwright on mobile viewports, axe |
 | `lighthouse` | `make lighthouse` | Production build, bundle budget, PWA fields, Lighthouse scores |
+| `image-build (amd64)`, `image-build (arm64)` | `make images` | The prod images build and answer GET requests (smoke test) |
 
 ## Workflow "PR rules" (`.github/workflows/pr-rules.yml`)
 
@@ -25,6 +26,18 @@ These jobs read the PR title, text and labels. They run again when the PR text o
 |---|---|---|
 | `pr-rules` | `bash scripts/pr-check.sh` | Conventional Commit title, branch name, PR boxes, "Why this package" lines |
 | `test-guard` | `make test-guard` | No change to an existing test without the label `tests-change-approved` |
+
+## Workflow "Images" (`.github/workflows/images.yml`)
+
+It runs on each merge to `main`. It is not a PR check.
+
+| Image | Dockerfile | Contents |
+|---|---|---|
+| `ghcr.io/diosduck/pond-habits/api` | `backend/Dockerfile`, target `prod` | PHP-FPM with the Laravel app, no dev packages. Also for the worker and the scheduler. |
+| `ghcr.io/diosduck/pond-habits/web` | `infra/caddy/Dockerfile` | Caddy with the frontend build and a copy of `backend/public/` |
+
+Each image has the tags `main` (the newest build) and `sha-<7 characters>` (one commit).
+Each tag holds an amd64 and an arm64 image. Each architecture builds on its own native runner.
 
 ## The PR boxes
 
