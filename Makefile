@@ -14,6 +14,11 @@ NODE := $(COMPOSE) run --rm --no-deps -e npm_config_update_notifier=false web
 # Run a command in the Playwright image (Chromium, WebKit). It needs the running stack.
 E2E := $(COMPOSE) run --rm e2e
 
+# Tool images. Renovate updates these lines (.github/renovate.json5).
+GITLEAKS_IMAGE := ghcr.io/gitleaks/gitleaks:v8.24.0
+ACTIONLINT_IMAGE := rhysd/actionlint:1.7.12
+export GITLEAKS_IMAGE
+
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
@@ -131,7 +136,7 @@ lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, sc
 	bash scripts/docs-check.sh
 	bash scripts/actions-pin-check.sh
 	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -v "$(CURDIR)":/repo:ro -w /repo \
-		rhysd/actionlint:1.7.12 -no-color
+		$(ACTIONLINT_IMAGE) -no-color
 
 selftest: ## Check that the guard hooks and the check scripts still catch bad input
 	bash .claude/hooks/selftest.sh
@@ -146,7 +151,7 @@ licence-check: ## Fail on a package licence that is not on the allow-list (ADR 0
 
 secrets-scan: ## Scan all commits for secrets with gitleaks
 	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -e HOME=/tmp -v "$(CURDIR)":/repo:ro \
-		ghcr.io/gitleaks/gitleaks:v8.24.0 git /repo --no-banner --log-level warn --redact
+		$(GITLEAKS_IMAGE) git /repo --no-banner --log-level warn --redact
 
 test-guard: ## Fail if this branch changes an existing test (compared with origin/main)
 	bash scripts/test-guard.sh origin/main

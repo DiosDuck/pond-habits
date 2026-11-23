@@ -1,0 +1,87 @@
+// Renovate (ADR 0010): it runs in our own GitHub Actions (.github/workflows/renovate.yml), weekly.
+// It opens grouped PRs for minor and patch updates. A major update waits for approval on the
+// Dependency Dashboard issue, because it needs an ADR and its own PR (ADR 0017).
+// Docs: https://docs.renovatebot.com/configuration-options/
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    // Keep the actions pinned to a SHA with the version in a comment (ADR 0010).
+    'helpers:pinGitHubActionDigestsToSemver',
+    // Conventional Commit titles, for example "chore(deps): update ...".
+    ':semanticCommits',
+  ],
+  // The CI branch rule allows feat/, fix/, chore/ and docs/ only.
+  branchPrefix: 'chore/renovate-',
+  labels: ['dependencies'],
+  // config:recommended turns on the Dependency Dashboard issue.
+  // Wait 3 days after a release. A bad or malicious release is often removed in this time.
+  minimumReleaseAge: '3 days',
+  prConcurrentLimit: 6,
+  // The tool versions for the lockfile updates. They agree with ADR 0017.
+  constraints: {
+    php: '8.5.*',
+    node: '^26',
+  },
+  // The PR text must have the boxes of the PR template (scripts/pr-check.sh).
+  prFooter: '## Why these packages\n\nNone (version updates only).\n\n## Checks\n\n- [ ] This PR changes a recorded decision or the privacy baseline\n- [ ] This PR changes `scripts/` or `.claude/` (review these diffs closely)\n- [ ] This PR changes an existing test (it needs the label `tests-change-approved`, added by the owner)',
+  packageRules: [
+    {
+      description: 'A major update needs an ADR and its own PR (ADR 0017). Approve it on the dashboard.',
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
+    {
+      description: 'One PR for each ecosystem: npm, Composer, Docker images, GitHub Actions.',
+      matchManagers: ['npm'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'npm packages (non-major)',
+      groupSlug: 'npm-non-major',
+    },
+    {
+      matchManagers: ['composer'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'Composer packages (non-major)',
+      groupSlug: 'composer-non-major',
+    },
+    {
+      matchManagers: ['dockerfile', 'docker-compose', 'custom.regex'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'Docker images (non-major)',
+      groupSlug: 'docker-non-major',
+    },
+    {
+      matchManagers: ['github-actions'],
+      groupName: 'GitHub Actions',
+      groupSlug: 'github-actions',
+    },
+    {
+      description: 'Scramble is 0.x: a minor can break. Separate PR (ADR 0010).',
+      matchPackageNames: ['dedoc/scramble'],
+      groupName: 'Scramble',
+      groupSlug: 'scramble',
+    },
+    {
+      description: 'The Playwright image and the npm package must have the same version.',
+      matchPackageNames: ['mcr.microsoft.com/playwright', '@playwright/test'],
+      groupName: 'Playwright',
+      groupSlug: 'playwright',
+    },
+    {
+      description: 'A new PHP, Node or PostgreSQL version is an ADR 0017 decision. Approve it on the dashboard.',
+      matchDatasources: ['docker'],
+      matchPackageNames: ['php', 'node', 'postgres'],
+      matchUpdateTypes: ['minor', 'major'],
+      dependencyDashboardApproval: true,
+    },
+  ],
+  // The tool images in the Makefile (gitleaks, actionlint).
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: ['/^Makefile$/'],
+      matchStrings: ['_IMAGE := (?<depName>[a-z0-9./-]+):(?<currentValue>[A-Za-z0-9._-]+)'],
+      datasourceTemplate: 'docker',
+    },
+  ],
+}

@@ -44,4 +44,4 @@ bash scripts/sensitive-check.sh "${staged[@]}"
 
 echo "pre-commit: gitleaks"
 docker run --rm --user "$HOST_UID:$HOST_GID" -e HOME=/tmp -v "$PWD":/repo:ro \
-  ghcr.io/gitleaks/gitleaks:v8.24.0 git /repo --pre-commit --staged --no-banner --log-level warn
+  "${GITLEAKS_IMAGE:?run this script with make hook-pre-commit}" git /repo --pre-commit --staged --no-banner --log-level warn
