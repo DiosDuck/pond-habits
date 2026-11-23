@@ -23,6 +23,10 @@ jobs:
     steps:
       # The token is valid for 1 hour and has only these permissions.
       # "workflows" lets Renovate update the action pins in .github/workflows/.
+      # "statuses" lets Renovate set the status renovate/stability-days (minimumReleaseAge).
+      #   Without it, Renovate stops the run with "repository-changed".
+      # "checks" (read) lets Renovate see the CI result of its PRs.
+      # "vulnerability-alerts" (read) lets Renovate open security fixes at once.
       - name: Get a token from the GitHub App
         id: app-token
         uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
@@ -33,6 +37,9 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
           permission-workflows: write
+          permission-statuses: write
+          permission-checks: read
+          permission-vulnerability-alerts: read
       - uses: renovatebot/github-action@acdd6bda8b035c99ce59d5675816af2aa65a1774 # v46.3.14
         with:
           token: ${{ steps.app-token.outputs.token }}

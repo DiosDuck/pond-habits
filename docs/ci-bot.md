@@ -11,7 +11,7 @@ Each workflow asks only for the permissions that it needs.
 
 | Workflow | Permissions it asks for |
 |---|---|
-| `renovate.yml` | Contents, Pull requests, Issues (Dependency Dashboard), Workflows (action pins) |
+| `renovate.yml` | Contents, Pull requests, Issues (Dependency Dashboard), Workflows (action pins), Commit statuses (write); Checks, Dependabot alerts (read) |
 | `release.yml` | Contents (tags, releases), Pull requests, Issues (labels) |
 
 ## Setup (one time, in the GitHub web UI)
@@ -19,8 +19,10 @@ Each workflow asks only for the permissions that it needs.
 1. Open your profile Settings → Developer settings → GitHub Apps → New GitHub App.
 2. Name: a unique name, for example `pond-habits-bot`. Homepage URL: the repository URL.
 3. Webhook: clear the "Active" box. The app does not receive events.
-4. Repository permissions, "Read and write": Contents, Issues, Pull requests, Workflows.
-   Metadata is "Read-only" automatically. Leave all other permissions at "No access".
+4. Repository permissions, "Read and write": Commit statuses, Contents, Issues, Pull requests, Workflows.
+   "Read-only": Checks, Dependabot alerts. Metadata is "Read-only" automatically.
+   Leave all other permissions at "No access".
+   After a permission change, accept it: Settings → Applications → Installed GitHub Apps → the app.
 5. "Where can this GitHub App be installed?": Only on this account. Click "Create GitHub App".
 6. On the app page, copy the Client ID.
 7. "Private keys" → "Generate a private key". The browser downloads a `.pem` file.
