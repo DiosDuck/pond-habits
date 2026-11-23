@@ -20,7 +20,7 @@
   prConcurrentLimit: 6,
   // The tool versions for the lockfile updates. They agree with ADR 0017.
   constraints: {
-    php: '8.5.*',
+    php: '8.6.*',
     node: '^26',
   },
   // The PR text must have the boxes of the PR template (scripts/pr-check.sh).
