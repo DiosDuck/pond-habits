@@ -39,6 +39,15 @@ It runs on each merge to `main`. It is not a PR check.
 Each image has the tags `main` (the newest build) and `sha-<7 characters>` (one commit).
 Each tag holds an amd64 and an arm64 image. Each architecture builds on its own native runner.
 
+## Workflows "Renovate" and "Release"
+
+Both use a token from the project's own GitHub App. See [CI bot](ci-bot.md).
+
+- `renovate.yml`: weekly, and by hand. Grouped PRs for minor and patch updates (config: `.github/renovate.json5`).
+  A major update, or a new PHP, Node or PostgreSQL version, waits for approval on the Dependency Dashboard issue.
+- `release.yml`: on each merge to `main`. release-please keeps the release PR up to date.
+  Its merge makes the tag `v<version>`. Do not merge it before the first deploy (Phase 4).
+
 ## The PR boxes
 
 The two boxes in the "Checks" section of the PR template must agree with the diff:

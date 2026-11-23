@@ -119,6 +119,13 @@ expect 1 "pr: free-text title fails" \
   env PR_TITLE="Added x" PR_BRANCH=feat/x PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
 expect 1 "pr: wrong branch name fails" \
   env PR_TITLE="$ok_title" PR_BRANCH=x PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
+expect 0 "pr: Renovate branch passes" \
+  env PR_TITLE="$ok_title" PR_BRANCH=chore/renovate-npm-non-major PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
+expect 0 "pr: release-please branch passes" \
+  env PR_TITLE="chore: release 0.1.0" PR_BRANCH=release-please--branches--main PR_BODY="$(boxes ' ' ' ')" \
+  bash scripts/pr-check.sh main
+expect 1 "pr: other release-please branch fails" \
+  env PR_TITLE="$ok_title" PR_BRANCH=release-please--branches--dev PR_BODY="$(boxes ' ' ' ')" bash scripts/pr-check.sh main
 expect 1 "pr: PR text with no boxes fails" \
   env PR_TITLE="$ok_title" PR_BRANCH=feat/x PR_BODY="Summary" bash scripts/pr-check.sh main
 expect 1 "pr: decision box with no ADR change fails" \

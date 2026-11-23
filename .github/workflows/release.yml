@@ -1,0 +1,39 @@
+# Release (ADR 0012): release-please keeps one open "release" PR. It reads the Conventional
+# Commit titles on main and writes the next version and CHANGELOG.md.
+# A merge of the release PR makes the tag v<version> and the GitHub release.
+# The production deploy on a tag comes in Phase 4.
+# It uses a token from the project's own GitHub App (setup: docs/ci-bot.md), so that the
+# release PR gets CI runs and the tag can start other workflows.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Get a token from the GitHub App
+        id: app-token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.BOT_CLIENT_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

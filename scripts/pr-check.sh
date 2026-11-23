@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PR rules (ADR 0007, ADR 0010, ADR 0012). CI runs it on each PR with the PR data in variables:
 #   PR_TITLE   the title. A squash merge uses it as the commit message, so it follows Conventional Commits.
-#   PR_BRANCH  the source branch: feat/, fix/, chore/ or docs/.
+#   PR_BRANCH  the source branch: feat/, fix/, chore/ or docs/. The release-please branch is allowed too.
 #   PR_BODY    the PR text. It must keep the "Checks" boxes of the PR template.
 # The two boxes must agree with the diff (compared with the base ref):
 #   "changes a recorded decision"  <=>  the diff changes docs/adr/ or docs/privacy.md
@@ -25,8 +25,8 @@ if ! bash scripts/commit-msg-check.sh "$tmp" > /dev/null 2>&1; then
   err "the PR title is not a Conventional Commit, for example \"feat(pomodoro): add the focus timer\"."
 fi
 
-# 2. Branch name (the same rule as the pre-push hook)
-if ! printf '%s' "${PR_BRANCH:-}" | grep -qE '^(feat|fix|chore|docs)/[a-z0-9._-]+$'; then
+# 2. Branch name (the same rule as the pre-push hook). release-please cannot change its branch name.
+if ! printf '%s' "${PR_BRANCH:-}" | grep -qE '^((feat|fix|chore|docs)/[a-z0-9._-]+|release-please--branches--main)$'; then
   err "the branch name must start with feat/, fix/, chore/ or docs/."
 fi
 
