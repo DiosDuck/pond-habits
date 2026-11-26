@@ -16,7 +16,8 @@ final readonly class MeController
     public function __invoke(Request $request): UserResource
     {
         $user = $request->user();
-        assert($user instanceof User);
+        // The auth:sanctum middleware lets only logged-in users in. This check is for the type checker.
+        abort_unless($user instanceof User, 401);
 
         return new UserResource($user);
     }
