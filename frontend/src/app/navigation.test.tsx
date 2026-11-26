@@ -43,8 +43,10 @@ describe('Today page', () => {
 })
 
 describe('main navigation', () => {
-  it('has the five tabs in order', () => {
+  it('has the five tabs in order', async () => {
     renderAt('/tasks')
+    // Feature pages load on demand (lazy). Wait for the page before the checks.
+    await screen.findByRole('heading', { level: 1, name: 'Tasks' })
 
     const nav = screen.getByRole('navigation', { name: 'Main' })
     const names = within(nav)
@@ -53,8 +55,10 @@ describe('main navigation', () => {
     expect(names).toEqual(['Today', 'Focus', 'Tasks', 'Habits', 'More'])
   })
 
-  it('marks the tab of the current page', () => {
+  it('marks the tab of the current page', async () => {
     renderAt('/tasks')
+    // Feature pages load on demand (lazy). Wait for the page before the checks.
+    await screen.findByRole('heading', { level: 1, name: 'Tasks' })
 
     const nav = screen.getByRole('navigation', { name: 'Main' })
     expect(within(nav).getByRole('link', { name: 'Tasks' })).toHaveAttribute(
@@ -68,6 +72,8 @@ describe('main navigation', () => {
 
   it('opens the page of a tab', async () => {
     renderAt('/tasks')
+    // Feature pages load on demand (lazy). Wait for the page before the checks.
+    await screen.findByRole('heading', { level: 1, name: 'Tasks' })
 
     const nav = screen.getByRole('navigation', { name: 'Main' })
     fireEvent.click(within(nav).getByRole('link', { name: 'Habits' }))
@@ -89,11 +95,12 @@ describe('page names', () => {
     ['/rewards', 'Rewards'],
     ['/settings', 'Settings'],
     ['/admin', 'Admin'],
-  ])('%s shows the page name', (path, title) => {
+  ])('%s shows the page name', async (path, title) => {
     renderAt(path)
 
+    // Feature pages load on demand (lazy): wait for the heading.
     expect(
-      screen.getByRole('heading', { level: 1, name: title }),
+      await screen.findByRole('heading', { level: 1, name: title }),
     ).toBeInTheDocument()
   })
 })
