@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { z } from 'zod'
 
 import { ApiError } from '../api/client.ts'
@@ -11,7 +12,6 @@ import { PageHeader } from '../layout/PageHeader.tsx'
 import { sendInvite } from './api.ts'
 
 // The Admin page (docs/product/accounts.md). Now: send an invite (docs/product/invites.md).
-// The lists of invites and users come in a later PR.
 // The server checks the admin role for each request. This page only hides the form.
 export function AdminPage() {
   const { t } = useTranslation()
@@ -22,7 +22,10 @@ export function AdminPage() {
       <PageHeader title={t('pages.admin')} />
       <main className="flex flex-col gap-4 px-4">
         {isAdmin ? (
-          <InviteForm />
+          <>
+            <InviteForm />
+            <AdminLinks />
+          </>
         ) : (
           <p className="border-line bg-card text-muted rounded-2xl border p-4">
             {t('admin.onlyAdmins')}
@@ -30,6 +33,35 @@ export function AdminPage() {
         )}
       </main>
     </div>
+  )
+}
+
+// Links to the list pages. The hub itself loads no lists (docs/product/admin.md).
+function AdminLinks() {
+  const { t } = useTranslation()
+  const links = [
+    { to: '/admin/users', label: t('admin.users') },
+    { to: '/admin/invites', label: t('admin.invites') },
+  ]
+
+  return (
+    <nav
+      aria-label={t('pages.admin')}
+      className="border-line bg-card divide-line flex flex-col divide-y rounded-2xl border"
+    >
+      {links.map((link) => (
+        <Link
+          key={link.to}
+          to={link.to}
+          className="hover:text-primary flex min-h-14 items-center justify-between px-4 font-semibold"
+        >
+          {link.label}
+          <span aria-hidden="true" className="text-muted text-xl">
+            ›
+          </span>
+        </Link>
+      ))}
+    </nav>
   )
 }
 

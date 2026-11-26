@@ -68,10 +68,14 @@ function refreshCsrfCookie(): Promise<unknown> {
   return csrfRequest
 }
 
-function post(path: string, body: unknown): Promise<Response> {
+function send(
+  method: 'POST' | 'DELETE',
+  path: string,
+  body: unknown,
+): Promise<Response> {
   const token = readCookie('XSRF-TOKEN')
   return fetch(path, {
-    method: 'POST',
+    method,
     credentials: 'same-origin',
     headers: {
       Accept: 'application/json',
@@ -86,12 +90,25 @@ function post(path: string, body: unknown): Promise<Response> {
 // Status 419 means that the token is old (for example after 30 days with no use):
 // it gets a new CSRF cookie and sends the request again, one time.
 // Returns the JSON body, or null for "204 No Content".
-export async function apiPost(path: string, body?: unknown): Promise<unknown> {
+export function apiPost(path: string, body?: unknown): Promise<unknown> {
+  return sendWithCsrf('POST', path, body)
+}
+
+// DELETE, with the same CSRF handling as apiPost.
+export function apiDelete(path: string): Promise<unknown> {
+  return sendWithCsrf('DELETE', path, undefined)
+}
+
+async function sendWithCsrf(
+  method: 'POST' | 'DELETE',
+  path: string,
+  body: unknown,
+): Promise<unknown> {
   if (readCookie('XSRF-TOKEN') === null) await refreshCsrfCookie()
-  let response = await post(path, body)
+  let response = await send(method, path, body)
   if (response.status === 419) {
     await refreshCsrfCookie()
-    response = await post(path, body)
+    response = await send(method, path, body)
   }
   if (!response.ok)
     throw new ApiError(response.status, await readBody(response))
