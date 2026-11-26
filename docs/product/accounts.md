@@ -5,6 +5,7 @@
 - The command `make admin` runs `php artisan app:create-admin <email>` in the API container.
 - On the server, the owner runs it once through SSH on the tailnet, or through the manual admin workflow (see [ADR 0012](../adr/0012-ci-cd-pipeline.md)).
 - The command sends a "set your password" link. No admin password is kept in an env file.
+- Login, logout and the set-password flow: [login.md](login.md).
 
 ## Invites and registration
 
