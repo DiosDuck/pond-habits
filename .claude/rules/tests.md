@@ -15,3 +15,5 @@ A committed test is frozen, also on its own branch. A fix costs the owner a patc
 - Before you rely on a fake or a mock that is new to you, check its behaviour in the scratchpad (for example: the first matching `Http::fake()` wins).
 - Make sure that each test can fail: what wrong code would it pass by mistake?
 - Give shared test helpers options from the start (for example a user or a session), because committed helpers are frozen too.
+- Playwright `getByLabel()` and `getByText()` match a part of the text: "New password" also finds "Repeat the new password". Use `{ exact: true }` when one label is inside another.
+- Pages load on demand (lazy). After a click to another page, wait for its heading before you fill a field: the old page stays on screen until the new one is ready.
