@@ -2,12 +2,15 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { useCurrentUser } from '../auth/session.ts'
 import { Icon, type IconName } from '../ui/Icon.tsx'
 
 // The home page (docs/product/today.md, ADR 0024). Each feature adds its card here.
 // The cards have no data yet: the features come in later versions.
 export function TodayPage() {
   const { t, i18n } = useTranslation()
+  // The Admin link shows for admins only. The server checks the role again for each admin request.
+  const isAdmin = useCurrentUser()?.role === 'admin'
   const date = new Intl.DateTimeFormat(i18n.language, {
     weekday: 'long',
     day: 'numeric',
@@ -24,11 +27,13 @@ export function TodayPage() {
           </h1>
         </div>
         <div className="flex gap-1">
-          <HeaderLink
-            to="/admin"
-            icon="shield_person"
-            label={t('pages.admin')}
-          />
+          {isAdmin ? (
+            <HeaderLink
+              to="/admin"
+              icon="shield_person"
+              label={t('pages.admin')}
+            />
+          ) : null}
           <HeaderLink
             to="/settings"
             icon="settings"

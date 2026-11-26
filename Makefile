@@ -22,7 +22,7 @@ export GITLEAKS_IMAGE
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
-	build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
+	admin build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
 	install install-backend install-frontend audit licence-check secrets-scan selftest images \
 	mutation-backend mutation-frontend
 
@@ -122,6 +122,7 @@ build-frontend: ## Build the frontend, then check the bundle budget and the PWA 
 
 e2e: ## Run the end-to-end tests (mobile viewports, axe) against the running stack
 	$(COMPOSE) up -d --wait
+	$(COMPOSE) exec -T api php artisan db:seed --class=DemoUserSeeder
 	$(E2E) npx playwright test
 
 lighthouse: build-frontend ## Run Lighthouse on the production build (http://localhost:8081)
