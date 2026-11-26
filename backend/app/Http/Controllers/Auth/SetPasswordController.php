@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Auth\UserSessions;
 use App\Http\Requests\SetPasswordRequest;
 use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
@@ -18,7 +19,10 @@ use Illuminate\Validation\ValidationException;
  */
 final readonly class SetPasswordController
 {
-    public function __construct(private DomainEventLog $events) {}
+    public function __construct(
+        private DomainEventLog $events,
+        private UserSessions $sessions,
+    ) {}
 
     public function __invoke(SetPasswordRequest $request): Response
     {
@@ -51,6 +55,11 @@ final readonly class SetPasswordController
         }
 
         $this->events->record('auth.password_set', ['user_id' => $userId]);
+
+        // A new password ends all sessions of the user: a stolen session stops working.
+        if (is_string($userId) && $this->sessions->endAll($userId) > 0) {
+            $this->events->record('auth.sessions_ended', ['user_id' => $userId]);
+        }
 
         return response()->noContent();
     }

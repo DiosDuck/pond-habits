@@ -63,3 +63,8 @@ export async function register(input: {
     }),
   )
 }
+
+// Ask for a password reset link (docs/product/password-reset.md). The answer is always the same.
+export async function forgotPassword(email: string): Promise<void> {
+  await apiPost('/api/password/forgot', { email })
+}

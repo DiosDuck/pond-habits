@@ -12,7 +12,7 @@
 1. An admin sends an invite by email.
 2. The invitee opens the link and completes the registration form.
 3. The invite link counts as email verification ([ADR 0025](../adr/0025-invite-verifies-email.md)). The user is logged in at once.
-4. Password reset is available.
+4. Password reset is available: [password-reset.md](password-reset.md).
 
 Details and scenarios: [invites.md](invites.md).
 

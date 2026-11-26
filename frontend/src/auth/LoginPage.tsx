@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Navigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { ApiError } from '../api/client.ts'
@@ -84,6 +84,12 @@ export function LoginPage() {
           {t('login.submit')}
         </button>
       </form>
+      <Link
+        to="/forgot-password"
+        className="text-primary flex min-h-11 items-center justify-center text-sm font-semibold"
+      >
+        {t('forgot.title')}
+      </Link>
     </PublicPage>
   )
 }

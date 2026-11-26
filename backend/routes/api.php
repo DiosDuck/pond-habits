@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\MeController;
@@ -12,8 +13,10 @@ use App\Http\Controllers\Invites\SendInviteController;
 use Illuminate\Support\Facades\Route;
 
 // API routes (prefix /api). Login and logout: docs/product/login.md. Invites: docs/product/invites.md.
+// Password reset: docs/product/password-reset.md.
 Route::post('/login', LoginController::class)->name('login');
 Route::post('/password/set', SetPasswordController::class)->name('password.set');
+Route::post('/password/forgot', ForgotPasswordController::class)->name('password.forgot');
 Route::post('/invites/check', CheckInviteController::class)->name('invites.check');
 Route::post('/register', RegisterController::class)->name('register');
 

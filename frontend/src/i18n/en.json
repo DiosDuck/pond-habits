@@ -85,5 +85,13 @@
     "send": "Send invite",
     "sent": "Invite sent to {{email}}.",
     "tooMany": "Too many invites. Try again later."
+  },
+  "forgot": {
+    "title": "Forgot your password?",
+    "intro": "Enter the email address of your account. We send a link to set a new password.",
+    "submit": "Send link",
+    "sent": "If an account exists for this address, we sent a link. Check your mail.",
+    "tooMany": "Too many requests. Try again later.",
+    "back": "Back to log in"
   }
 }
