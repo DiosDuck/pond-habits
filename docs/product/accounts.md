@@ -28,8 +28,9 @@ The admin page is inside the React app. The API rejects admin endpoints for non-
 
 - send and cancel invites,
 - see the user list,
-- disable a user,
-- switch open sign-up on or off.
+- disable and enable a user.
+
+Details and scenarios: [admin.md](admin.md). The open sign-up switch comes later, together with the public sign-up page (backlog).
 
 ## Settings page
 
