@@ -2,7 +2,7 @@
 
 Pond Habits is a personal tracker app for daily focus, tasks, habits and nutrition. The user earns or loses virtual credits and spends them on rewards that the user defines.
 
-Status: no code exists yet.
+Status: accounts are ready (invite, login, password reset, admin pages, settings). The app is not live yet. The product features (focus, credits, tasks, habits, nutrition) come next.
 
 ## Documentation
 
