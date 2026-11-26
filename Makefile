@@ -79,7 +79,9 @@ api-spec: ## Write the OpenAPI spec to docs/generated/openapi.json (ADR 0021)
 	mkdir -p docs/generated
 	$(PHP) php artisan scramble:export --path=../docs/generated/openapi.json
 
-# "make admin" comes with the accounts feature (Phase 3).
+admin: ## Create an admin and mail a set-password link: make admin EMAIL=you@example.com
+	@test -n "$(EMAIL)" || { echo 'Usage: make admin EMAIL=you@example.com'; exit 1; }
+	$(PHP) php artisan app:create-admin "$(EMAIL)"
 
 ## Images
 

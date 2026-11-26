@@ -10,9 +10,12 @@ use Illuminate\Notifications\Notification;
 
 /**
  * The mail with the set-password link (docs/product/login.md).
+ * The link has the token only. The form asks for the email, so the address is not in URLs or logs.
  */
 final class SetPasswordNotification extends Notification
 {
+    public function __construct(private readonly string $token) {}
+
     /**
      * @return list<string>
      */
@@ -23,6 +26,14 @@ final class SetPasswordNotification extends Notification
 
     public function toMail(User $notifiable): MailMessage
     {
-        return new MailMessage;
+        $url = config()->string('app.url').'/set-password?token='.urlencode($this->token);
+        $minutes = config()->integer('auth.passwords.users.expire');
+
+        return (new MailMessage)
+            ->subject('Set your Pond Habits password')
+            ->line('An account was made for you on Pond Habits.')
+            ->action('Set your password', $url)
+            ->line("The link works once and expires in {$minutes} minutes.")
+            ->line('If you did not expect this mail, you can ignore it.');
     }
 }
