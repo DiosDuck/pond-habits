@@ -22,6 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $password
  * @property Role $role
  * @property string $timezone
+ * @property string $theme
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $disabled_at
  */

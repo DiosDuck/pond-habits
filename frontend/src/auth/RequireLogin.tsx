@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
+
+import { applyTheme } from '../theme/theme.ts'
 
 import { CurrentUserContext, useMe } from './session.ts'
 
@@ -7,6 +10,12 @@ import { CurrentUserContext, useMe } from './session.ts'
 export function RequireLogin() {
   const me = useMe()
   const location = useLocation()
+  const theme = me.data?.theme
+
+  // The theme of the account follows the user to each device.
+  useEffect(() => {
+    if (theme !== undefined) applyTheme(theme)
+  }, [theme])
 
   if (me.isPending) return null
 

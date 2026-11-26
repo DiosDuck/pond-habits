@@ -34,7 +34,7 @@ Details and scenarios: [admin.md](admin.md). The open sign-up switch comes later
 
 ## Settings page
 
-Profile, time zone, theme, reminder switches, data export (JSON), account deletion, logout.
+Profile, time zone, theme, password, data export (JSON), account deletion. Details and scenarios: [settings.md](settings.md). Log out is on the More page. Reminder switches come in Phase 5.
 
 ## Demo users (local and staging only)
 

@@ -22,7 +22,7 @@ export GITLEAKS_IMAGE
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
-	admin build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
+	admin export-user delete-user build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
 	install install-backend install-frontend audit licence-check secrets-scan selftest images \
 	mutation-backend mutation-frontend
 
@@ -82,6 +82,14 @@ api-spec: ## Write the OpenAPI spec to docs/generated/openapi.json (ADR 0021)
 admin: ## Create an admin and mail a set-password link: make admin EMAIL=you@example.com
 	@test -n "$(EMAIL)" || { echo 'Usage: make admin EMAIL=you@example.com'; exit 1; }
 	$(PHP) php artisan app:create-admin "$(EMAIL)"
+
+export-user: ## GDPR request: write the data of a user to backend/storage/app/private/exports/: make export-user EMAIL=...
+	@test -n "$(EMAIL)" || { echo 'Usage: make export-user EMAIL=user@example.com'; exit 1; }
+	$(PHP) php artisan app:export-user "$(EMAIL)"
+
+delete-user: ## GDPR request: delete a user and all data (asks first): make delete-user EMAIL=...
+	@test -n "$(EMAIL)" || { echo 'Usage: make delete-user EMAIL=user@example.com'; exit 1; }
+	$(PHP) php artisan app:delete-user "$(EMAIL)"
 
 ## Images
 
