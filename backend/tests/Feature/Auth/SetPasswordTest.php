@@ -12,10 +12,15 @@ use function Pest\Laravel\postJson;
 
 // docs/product/login.md: set the password from the mailed link.
 
+// The breach check sends the first 5 characters of the SHA-1 hash and gets a list of suffixes.
+// The fake list has the suffix of this one test password. Each other password is "not breached".
+const BREACHED_TEST_PASSWORD = 'a long but breached password';
+
 beforeEach(function (): void {
-    // The breached-password check calls Have I Been Pwned. The tests never call the real API.
+    // The tests never call the real Have I Been Pwned API.
     Http::preventStrayRequests();
-    Http::fake(['api.pwnedpasswords.com/*' => Http::response("0000000000000000000000000000000000A:1\r\n")]);
+    $suffix = substr(strtoupper(sha1(BREACHED_TEST_PASSWORD)), 5);
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response("0000000000000000000000000000000000A:1\r\n{$suffix}:42\r\n")]);
 });
 
 /**
@@ -92,13 +97,10 @@ it('rejects a password with fewer than 12 characters', function (): void {
 });
 
 it('rejects a password that is in a known data breach', function (): void {
-    $password = 'a long but breached password';
-    $hash = strtoupper(sha1($password));
-    Http::fake(['api.pwnedpasswords.com/*' => Http::response(substr($hash, 5).":42\r\n")]);
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    postJson('/api/password/set', setPasswordForm($token, $user->email, $password))
+    postJson('/api/password/set', setPasswordForm($token, $user->email, BREACHED_TEST_PASSWORD))
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['password']);
 });
