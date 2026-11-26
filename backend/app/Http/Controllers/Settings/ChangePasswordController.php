@@ -29,7 +29,7 @@ final readonly class ChangePasswordController
             $events->record('auth.password_change_refused', ['user_id' => $user->id]);
 
             throw ValidationException::withMessages([
-                'current_password' => 'The current password is not correct.',
+                'current_password' => __('errors.current_password_wrong'),
             ]);
         }
 

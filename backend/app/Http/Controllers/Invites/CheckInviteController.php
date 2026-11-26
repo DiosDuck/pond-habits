@@ -21,7 +21,7 @@ final readonly class CheckInviteController
 
         if (! $invite instanceof Invite) {
             throw ValidationException::withMessages([
-                'token' => 'This invite is not valid or has expired.',
+                'token' => __('errors.invite_invalid'),
             ]);
         }
 

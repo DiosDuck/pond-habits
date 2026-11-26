@@ -46,6 +46,7 @@ Each rule has an enforcement type. Try to have as few "review" rules as possible
 | The OpenAPI spec and the TypeScript API types agree with the code. | CI |
 | The PWA meets the Lighthouse and bundle size budget. | CI |
 | Accessibility: no axe violations (WCAG 2.2 AA). | CI (E2E) |
+| User texts come from i18n keys (ADR 0001): `frontend/src/i18n/en.json` and `backend/lang/en/`. Write each key in full. | CI (typecheck, i18n key tests) |
 
 ## Dependencies
 

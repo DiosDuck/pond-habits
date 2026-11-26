@@ -30,10 +30,10 @@ final class ResetPasswordNotification extends Notification
         $minutes = config()->integer('auth.passwords.users.expire');
 
         return (new MailMessage)
-            ->subject('Reset your Pond Habits password')
-            ->line('We got a request to reset the password of your Pond Habits account.')
-            ->action('Set a new password', $url)
-            ->line("The link works once and expires in {$minutes} minutes.")
-            ->line('If you did not ask for this, you can ignore this mail. Your password stays the same.');
+            ->subject(__('mail.reset_password.subject'))
+            ->line(__('mail.reset_password.intro'))
+            ->action(__('mail.reset_password.action'), $url)
+            ->line(__('mail.reset_password.expires', ['minutes' => $minutes]))
+            ->line(__('mail.reset_password.ignore'));
     }
 }

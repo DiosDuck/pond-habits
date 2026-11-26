@@ -31,7 +31,7 @@ final readonly class RegisterController
             $this->events->record('invite.rejected');
 
             throw ValidationException::withMessages([
-                'token' => 'This invite is not valid or has expired.',
+                'token' => __('errors.invite_invalid'),
             ]);
         }
 

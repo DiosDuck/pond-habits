@@ -8,7 +8,14 @@ import { NotFoundPage } from '../pages/NotFoundPage.tsx'
 import { TodayPage } from '../pages/TodayPage.tsx'
 
 // Pages of features that come in a later version (ADR 0024).
-const later = ['focus', 'tasks', 'habits', 'nutrition', 'rewards'] as const
+// Each page has its i18n key in full, so a search finds the key (src/i18n/keys.test.ts).
+const later = [
+  { path: 'focus', title: 'pages.focus' },
+  { path: 'tasks', title: 'pages.tasks' },
+  { path: 'habits', title: 'pages.habits' },
+  { path: 'nutrition', title: 'pages.nutrition' },
+  { path: 'rewards', title: 'pages.rewards' },
+] as const
 
 // Today, More and "Page not found" are in the first download: the app opens on them.
 // Each feature page loads on demand ("lazy"), so the first download stays small
@@ -19,12 +26,12 @@ export const routes: RouteObject[] = [
     HydrateFallback: PageLoading,
     children: [
       { index: true, element: <TodayPage /> },
-      ...later.map((page): RouteObject => ({
-        path: page,
+      ...later.map(({ path, title }): RouteObject => ({
+        path,
         lazy: async () => {
           const { PlaceholderPage } =
             await import('../pages/PlaceholderPage.tsx')
-          return { element: <PlaceholderPage page={page} /> }
+          return { element: <PlaceholderPage title={title} /> }
         },
       })),
       {

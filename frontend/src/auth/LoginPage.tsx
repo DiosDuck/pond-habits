@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
@@ -94,7 +95,7 @@ export function LoginPage() {
   )
 }
 
-function loginErrorText(error: Error, t: (key: string) => string): string {
+function loginErrorText(error: Error, t: TFunction): string {
   if (error instanceof ApiError) {
     if (error.status === 429) return t('login.tooMany')
     const message = error.fieldError('email')
