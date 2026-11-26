@@ -14,10 +14,11 @@ Each feature has a card. Each card links to its page.
 
 ## Navigation
 
-- On mobile, other pages show a bottom tab bar. The bar has a "Today" tab.
 - The Today page does not show the bottom tab bar. The cards are the menu.
-- The Today header has links to Settings and, for admins, Admin.
-- The design session can change these points.
+- The Today header has links to Settings and, for admins, Admin. Each link has an icon and a visible label.
+- Other pages show a bottom tab bar: Today, Focus, Tasks, Habits, More.
+- At 1024 px and wider, a left sidebar replaces the tab bar.
+- Details: [ADR 0024](../adr/0024-visual-design.md).
 
 ## Growth
 

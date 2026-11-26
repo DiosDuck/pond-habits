@@ -36,7 +36,7 @@
 
 ## Open design items
 
-The design session (after the CI/CD pipeline works) decides navigation, the duck mascot, the colour palette, the SVG icon set and the empty states.
+[ADR 0024](../adr/0024-visual-design.md) records the palette, the navigation, the icon set and the mascot brief. Still open: the empty states and the first-use flow (design round 2), and the final mascot art.
 
 ## Scenario format
 

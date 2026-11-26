@@ -35,3 +35,4 @@ An ADR records one decision: the context, the decision and the consequences. All
 | [0021](0021-api-contract.md) | API contract |
 | [0022](0022-offline-scope.md) | Offline scope |
 | [0023](0023-public-repo-content.md) | Public repository content |
+| [0024](0024-visual-design.md) | Visual design and navigation (2026-11-26) |

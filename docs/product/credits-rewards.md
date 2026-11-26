@@ -28,8 +28,8 @@ The user can change each value per item.
 ## Rewards
 
 - The user creates rewards: name, price, icon.
-- The icon comes from a built-in set of SVG icons (coin, gift, coffee, game, film, food, travel and more). The default icon is the coin.
-- The coin SVG is also the icon of the credits currency.
+- The icon comes from a built-in set of Material Symbols (coin, gift, coffee, game, film, food, travel and more). The default icon is the coin (`toll`). See [ADR 0024](../adr/0024-visual-design.md).
+- The coin icon is also the icon of the credits currency.
 - No image uploads.
 - A reward is repeatable by default. The user can mark a reward as "one-time".
 - A purchase deducts credits and adds a row to the purchase history.
