@@ -67,6 +67,10 @@ test('invite, register, log out, log in, reset the password, log in again', asyn
 
   // 4. Request a reset link from the login page.
   await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  // The page loads on demand: the login page (with its own Email field) stays until it is ready.
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Forgot your password?' }),
+  ).toBeVisible()
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send link' }).click()
   await expect(page.getByRole('status')).toContainText(
@@ -81,7 +85,8 @@ test('invite, register, log out, log in, reset the password, log in again', asyn
   )
   await page.goto(reset)
   await page.getByLabel('Email').fill(email)
-  await page.getByLabel('New password').fill(newPassword)
+  // exact: true, because "Repeat the new password" also contains "new password".
+  await page.getByLabel('New password', { exact: true }).fill(newPassword)
   await page.getByLabel('Repeat the new password').fill(newPassword)
   await page.getByRole('button', { name: 'Set password' }).click()
   await expect(page.getByText('Your password is set.')).toBeVisible()
