@@ -130,7 +130,7 @@ build-frontend: ## Build the frontend, then check the bundle budget and the PWA 
 
 e2e: ## Run the end-to-end tests (mobile viewports, axe) against the running stack
 	$(COMPOSE) up -d --wait
-	$(COMPOSE) exec -T api php artisan db:seed --class=DemoUserSeeder
+	$(COMPOSE) exec -T api php artisan db:seed
 	$(E2E) npx playwright test
 
 lighthouse: build-frontend ## Run Lighthouse on the production build (http://localhost:8081)
