@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Logging\AddPersonalDataProcessor;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
@@ -53,6 +54,7 @@ return [
     |
     */
 
+    // Each channel (not stack, null) removes personal data first: AddPersonalDataProcessor (privacy.md item 7).
     'channels' => [
 
         'stack' => [
@@ -63,6 +65,7 @@ return [
 
         'single' => [
             'driver' => 'single',
+            'tap' => [AddPersonalDataProcessor::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
@@ -70,6 +73,7 @@ return [
 
         'daily' => [
             'driver' => 'daily',
+            'tap' => [AddPersonalDataProcessor::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
@@ -78,6 +82,7 @@ return [
 
         'monthly' => [
             'driver' => 'monthly',
+            'tap' => [AddPersonalDataProcessor::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => 3,
@@ -86,6 +91,7 @@ return [
 
         'slack' => [
             'driver' => 'slack',
+            'tap' => [AddPersonalDataProcessor::class],
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
             'username' => env('LOG_SLACK_USERNAME', env('APP_NAME', 'Laravel')),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
@@ -95,6 +101,7 @@ return [
 
         'papertrail' => [
             'driver' => 'monolog',
+            'tap' => [AddPersonalDataProcessor::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
             'handler_with' => [
@@ -107,6 +114,7 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
+            'tap' => [AddPersonalDataProcessor::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'handler_with' => [
@@ -118,6 +126,7 @@ return [
 
         'syslog' => [
             'driver' => 'syslog',
+            'tap' => [AddPersonalDataProcessor::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
@@ -125,6 +134,7 @@ return [
 
         'errorlog' => [
             'driver' => 'errorlog',
+            'tap' => [AddPersonalDataProcessor::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
@@ -141,6 +151,7 @@ return [
         // Domain events (ADR 0008): one JSON line for each event. IDs only, no personal data.
         'domain' => [
             'driver' => 'single',
+            'tap' => [AddPersonalDataProcessor::class],
             'path' => env('LOG_DOMAIN_PATH', storage_path('logs/domain.log')),
             'level' => 'info',
             'formatter' => JsonFormatter::class,

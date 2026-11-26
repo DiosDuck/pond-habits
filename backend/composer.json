@@ -11,6 +11,7 @@
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "monolog/monolog": "^3.13",
         "psr/log": "^3.0"
     },
     "require-dev": {
