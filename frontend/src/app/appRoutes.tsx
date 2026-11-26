@@ -25,6 +25,13 @@ export const appRoutes: RouteObject[] = [
         }),
       },
       {
+        path: '/forgot-password',
+        lazy: async () => ({
+          Component: (await import('../auth/ForgotPasswordPage.tsx'))
+            .ForgotPasswordPage,
+        }),
+      },
+      {
         path: '/register',
         lazy: async () => ({
           Component: (await import('../auth/RegisterPage.tsx')).RegisterPage,

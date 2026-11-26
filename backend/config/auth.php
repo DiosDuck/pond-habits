@@ -113,6 +113,17 @@ return [
         'max_per_hour' => (int) env('AUTH_INVITES_MAX_PER_HOUR', 20),
     ],
 
+    /*
+    | Password reset requests (docs/product/password-reset.md, ADR 0005).
+    | For each address: over the limit, no mail but the same answer (no hint that the account exists).
+    | For each IP address: over the limit, status 429.
+    */
+
+    'reset' => [
+        'max_per_address_per_hour' => (int) env('AUTH_RESET_MAX_PER_ADDRESS_PER_HOUR', 3),
+        'max_per_ip_per_hour' => (int) env('AUTH_RESET_MAX_PER_IP_PER_HOUR', 10),
+    ],
+
     'passwords' => [
         'users' => [
             'provider' => 'users',
