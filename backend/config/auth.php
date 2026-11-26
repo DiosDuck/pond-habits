@@ -94,6 +94,16 @@ return [
     |
     */
 
+    /*
+    | Login attempts for each email and IP address (ADR 0005, docs/product/login.md).
+    | After max_attempts failed attempts, the next attempts get status 429 for decay_seconds.
+    */
+
+    'login' => [
+        'max_attempts' => (int) env('AUTH_LOGIN_MAX_ATTEMPTS', 5),
+        'decay_seconds' => (int) env('AUTH_LOGIN_DECAY_SECONDS', 60),
+    ],
+
     'passwords' => [
         'users' => [
             'provider' => 'users',

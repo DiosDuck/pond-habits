@@ -17,6 +17,7 @@
 | Page | File |
 |---|---|
 | Accounts, admin, settings | [accounts.md](accounts.md) |
+| First admin, set password, login, logout | [login.md](login.md) |
 | Today (home) | [today.md](today.md) |
 | Pomodoro | [pomodoro.md](pomodoro.md) |
 | Credits and rewards | [credits-rewards.md](credits-rewards.md) |
