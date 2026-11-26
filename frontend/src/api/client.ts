@@ -55,14 +55,22 @@ export async function apiGet(path: string): Promise<unknown> {
   return response.json()
 }
 
-// POST JSON. It gets the CSRF cookie first when the browser has none.
-// Returns the JSON body, or null for "204 No Content".
-export async function apiPost(path: string, body?: unknown): Promise<unknown> {
-  if (readCookie('XSRF-TOKEN') === null) {
-    await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' })
-  }
+// One CSRF cookie request at a time. Two requests at the same time would each start a
+// new session with its own token, and one of them would get status 419.
+let csrfRequest: Promise<unknown> | null = null
+
+function refreshCsrfCookie(): Promise<unknown> {
+  csrfRequest ??= fetch('/sanctum/csrf-cookie', {
+    credentials: 'same-origin',
+  }).finally(() => {
+    csrfRequest = null
+  })
+  return csrfRequest
+}
+
+function post(path: string, body: unknown): Promise<Response> {
   const token = readCookie('XSRF-TOKEN')
-  const response = await fetch(path, {
+  return fetch(path, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
@@ -72,6 +80,19 @@ export async function apiPost(path: string, body?: unknown): Promise<unknown> {
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   })
+}
+
+// POST JSON. It gets the CSRF cookie first when the browser has none.
+// Status 419 means that the token is old (for example after 30 days with no use):
+// it gets a new CSRF cookie and sends the request again, one time.
+// Returns the JSON body, or null for "204 No Content".
+export async function apiPost(path: string, body?: unknown): Promise<unknown> {
+  if (readCookie('XSRF-TOKEN') === null) await refreshCsrfCookie()
+  let response = await post(path, body)
+  if (response.status === 419) {
+    await refreshCsrfCookie()
+    response = await post(path, body)
+  }
   if (!response.ok)
     throw new ApiError(response.status, await readBody(response))
   return response.status === 204 ? null : response.json()
