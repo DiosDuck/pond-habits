@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Resources\UserResource;
+use App\Http\Resources\MeResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +21,6 @@ final readonly class MeController
         abort_unless($user instanceof User, 401);
 
         // Always 200. A resource answers 201 by itself for a model that this request created.
-        return (new UserResource($user))->response()->setStatusCode(200);
+        return (new MeResource($user))->response()->setStatusCode(200);
     }
 }

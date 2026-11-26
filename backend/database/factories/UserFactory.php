@@ -33,6 +33,10 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // The same values as the database defaults, so a user in memory has them too.
+            'role' => Role::User,
+            'timezone' => 'UTC',
+            'theme' => 'system',
         ];
     }
 

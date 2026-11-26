@@ -69,7 +69,7 @@ function refreshCsrfCookie(): Promise<unknown> {
 }
 
 function send(
-  method: 'POST' | 'DELETE',
+  method: 'POST' | 'PATCH' | 'DELETE',
   path: string,
   body: unknown,
 ): Promise<Response> {
@@ -94,13 +94,33 @@ export function apiPost(path: string, body?: unknown): Promise<unknown> {
   return sendWithCsrf('POST', path, body)
 }
 
+// PATCH JSON, with the same CSRF handling as apiPost.
+export function apiPatch(path: string, body: unknown): Promise<unknown> {
+  return sendWithCsrf('PATCH', path, body)
+}
+
+// GET a file. The name comes from the Content-Disposition header of the server.
+export async function apiDownload(
+  path: string,
+): Promise<{ blob: Blob; fileName: string | null }> {
+  const response = await fetch(path, {
+    credentials: 'same-origin',
+    headers: { Accept: 'application/json' },
+  })
+  if (!response.ok)
+    throw new ApiError(response.status, await readBody(response))
+  const disposition = response.headers.get('Content-Disposition') ?? ''
+  const fileName = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? null
+  return { blob: await response.blob(), fileName }
+}
+
 // DELETE, with the same CSRF handling as apiPost.
-export function apiDelete(path: string): Promise<unknown> {
-  return sendWithCsrf('DELETE', path, undefined)
+export function apiDelete(path: string, body?: unknown): Promise<unknown> {
+  return sendWithCsrf('DELETE', path, body)
 }
 
 async function sendWithCsrf(
-  method: 'POST' | 'DELETE',
+  method: 'POST' | 'PATCH' | 'DELETE',
   path: string,
   body: unknown,
 ): Promise<unknown> {

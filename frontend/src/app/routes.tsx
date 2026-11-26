@@ -8,14 +8,7 @@ import { NotFoundPage } from '../pages/NotFoundPage.tsx'
 import { TodayPage } from '../pages/TodayPage.tsx'
 
 // Pages of features that come in a later version (ADR 0024).
-const later = [
-  'focus',
-  'tasks',
-  'habits',
-  'nutrition',
-  'rewards',
-  'settings',
-] as const
+const later = ['focus', 'tasks', 'habits', 'nutrition', 'rewards'] as const
 
 // Today, More and "Page not found" are in the first download: the app opens on them.
 // Each feature page loads on demand ("lazy"), so the first download stays small
@@ -34,6 +27,13 @@ export const routes: RouteObject[] = [
           return { element: <PlaceholderPage page={page} /> }
         },
       })),
+      {
+        path: 'settings',
+        lazy: async () => ({
+          Component: (await import('../settings/SettingsPage.tsx'))
+            .SettingsPage,
+        }),
+      },
       {
         path: 'admin',
         lazy: async () => ({

@@ -15,6 +15,10 @@ use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Invites\CheckInviteController;
 use App\Http\Controllers\Invites\RegisterController;
 use App\Http\Controllers\Invites\SendInviteController;
+use App\Http\Controllers\Settings\ChangePasswordController;
+use App\Http\Controllers\Settings\DeleteAccountController;
+use App\Http\Controllers\Settings\ExportController;
+use App\Http\Controllers\Settings\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 // API routes (prefix /api). Login and logout: docs/product/login.md. Invites: docs/product/invites.md.
@@ -28,6 +32,13 @@ Route::post('/register', RegisterController::class)->name('register');
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/logout', LogoutController::class)->name('logout');
     Route::get('/me', MeController::class)->name('me');
+
+    // Settings: docs/product/settings.md.
+    Route::get('/settings', [SettingsController::class, 'show'])->name('settings.show');
+    Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/password', ChangePasswordController::class)->name('settings.password');
+    Route::get('/settings/export', ExportController::class)->name('settings.export');
+    Route::delete('/settings/account', DeleteAccountController::class)->name('settings.account.destroy');
 
     // The server checks the admin role for each admin request (docs/product/accounts.md).
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function (): void {

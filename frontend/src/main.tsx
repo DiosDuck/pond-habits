@@ -10,6 +10,10 @@ import '@fontsource/nunito/800.css'
 
 import { App } from './app/App.tsx'
 import './index.css'
+import { startTheme } from './theme/theme.ts'
+
+// The saved theme before the first render, so the page does not flash in the wrong colours.
+startTheme()
 
 const root = document.getElementById('root')
 if (root === null) {
