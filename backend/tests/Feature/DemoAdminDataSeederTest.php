@@ -41,7 +41,11 @@ it('can run two times with the same result', function (): void {
 it('refuses to run in production', function (): void {
     app()->detectEnvironment(static fn (): string => 'production');
 
+    // "db:seed" refuses first (App\Console\Commands\SeedCommand), before the seeder runs.
     expect(static fn () => seed(DemoAdminDataSeeder::class))
+        ->toThrow(RuntimeException::class, 'Demo users are not allowed in production.');
+    // The seeder refuses too, when code calls it without "db:seed".
+    expect(static fn () => (new DemoAdminDataSeeder)->run())
         ->toThrow(RuntimeException::class, 'Demo data is not allowed in production.');
     expect(User::count())->toBe(0)
         ->and(Invite::count())->toBe(0);
