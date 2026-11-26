@@ -13,14 +13,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      // The design session sets the final name colours and icons.
+      // ADR 0024: the app asks the user before it loads a new version (UpdatePrompt).
+      registerType: 'prompt',
       manifest: {
+        // Do not change id, start_url or scope: each user must install the app again after a change.
+        id: '/',
+        scope: '/',
         name: 'Pond Habits',
         short_name: 'Pond Habits',
         description: 'Personal tracker for focus, tasks, habits and nutrition.',
         theme_color: '#0f766e',
-        background_color: '#ffffff',
+        background_color: '#f4f8f7',
         display: 'standalone',
         start_url: '/',
         icons: [

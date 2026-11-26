@@ -16,6 +16,8 @@ const ALLOWED = new Set([
   'BlueOak-1.0.0',
   'CC0-1.0',
   'Unlicense',
+  // SIL Open Font Licence: the open licence for fonts (Inter, Nunito). It allows use in apps.
+  'OFL-1.1',
 ])
 // Weak or non-code licences. They are safe for build and test tools that we do not ship or change.
 const DEV_ONLY = new Set(['MPL-2.0', 'PSF-2.0', 'CC-BY-4.0', 'Python-2.0'])

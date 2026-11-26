@@ -1,1 +1,52 @@
 @import 'tailwindcss';
+
+/* Colour tokens: palette "Pond" (ADR 0024). Use the token names, not hex codes, in components. */
+@theme {
+  --color-ground: #f4f8f7;
+  --color-card: #ffffff;
+  --color-line: #dce6e3;
+  --color-ink: #102a27;
+  --color-muted: #4a615d;
+  --color-primary: #0f766e;
+  --color-primary-soft: #e2f1ee;
+  --color-on-primary: #ffffff;
+  /* The bright teal and its text colour are the same in both themes. */
+  --color-primary-bright: #2dd4bf;
+  --color-on-bright: #0b1715;
+  /* The accent is a fill colour only. Do not use it for text on the light theme. */
+  --color-accent: #f5c518;
+  --color-on-accent: #102a27;
+  --color-minus: #b91c1c;
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-display: Nunito, Inter, system-ui, sans-serif;
+}
+
+/* Dark theme: it follows the system setting. The manual switch comes with the Settings page. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ground: #0b1715;
+    --color-card: #132321;
+    --color-line: #22403b;
+    --color-ink: #e3efec;
+    --color-muted: #9db3ae;
+    --color-primary: #2dd4bf;
+    --color-primary-soft: #17312d;
+    --color-on-primary: #0b1715;
+    --color-accent: #facc15;
+    --color-on-accent: #0b1715;
+    --color-minus: #f87171;
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+}
