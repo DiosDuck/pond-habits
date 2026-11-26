@@ -20,6 +20,7 @@
 | First admin, set password, login, logout | [login.md](login.md) |
 | Invites and registration | [invites.md](invites.md) |
 | Password reset | [password-reset.md](password-reset.md) |
+| Admin page | [admin.md](admin.md) |
 | Today (home) | [today.md](today.md) |
 | Pomodoro | [pomodoro.md](pomodoro.md) |
 | Credits and rewards | [credits-rewards.md](credits-rewards.md) |

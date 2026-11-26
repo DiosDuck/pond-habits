@@ -40,6 +40,20 @@ export const routes: RouteObject[] = [
           Component: (await import('../admin/AdminPage.tsx')).AdminPage,
         }),
       },
+      {
+        path: 'admin/users',
+        lazy: async () => ({
+          Component: (await import('../admin/AdminUsersPage.tsx'))
+            .AdminUsersPage,
+        }),
+      },
+      {
+        path: 'admin/invites',
+        lazy: async () => ({
+          Component: (await import('../admin/AdminInvitesPage.tsx'))
+            .AdminInvitesPage,
+        }),
+      },
       { path: 'more', element: <MorePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
