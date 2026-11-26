@@ -40,7 +40,7 @@ Profile, time zone, theme, password, data export (JSON), account deletion. Detai
 
 | User | Scenario |
 |---|---|
-| `admin@demo` | Admin, open invites, one disabled user |
+| `admin@demo` | Admin, open invites (`friend@demo`, `neighbour@demo`), one disabled user (`disabled@demo`) |
 | `new@demo` | No data (empty states) |
 | `power@demo` | 6 months of history, long streaks, many rewards bought |
 | `debt@demo` | Negative balance, missed recurring tasks |
@@ -53,4 +53,8 @@ Profile, time zone, theme, password, data export (JSON), account deletion. Detai
 - Staging: each deploy sets random passwords from a GitHub secret. The owner keeps them in the password manager.
 - Production: no demo users. Demo seeders refuse to run when `APP_ENV=production`. A test checks this.
 
-E2E tests use the same seed data. Add more users when new scenarios come.
+E2E tests use the same seed data (`make e2e` runs all demo seeders). Add more users when new scenarios come.
+
+Each demo user comes with the phase of its data. Now: `admin@demo`, `disabled@demo`, `new@demo`.
+Later: `pomodoro@demo` (focus), `power@demo` and `debt@demo` (credits, rewards, tasks),
+`tz@demo` (tasks with due dates), `relapse@demo` (habits), `nutrition@demo` (nutrition).
