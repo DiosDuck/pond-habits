@@ -14,23 +14,24 @@ This repo adds one library for each other job: React Router, TanStack Query, Rea
 | Angular | React in this repo | Example |
 |---|---|---|
 | `NgModule`, `declarations` | Nothing. Each file imports what it uses. | [main.tsx](../../frontend/src/main.tsx) |
-| Component class + HTML template | Function that returns JSX (HTML-like syntax in TypeScript) | [HomePage.tsx](../../frontend/src/pages/HomePage.tsx) |
-| `@Input()` | Props: the function argument, for example `function Card({ title })` | (first one in Phase 3) |
+| Component class + HTML template | Function that returns JSX (HTML-like syntax in TypeScript) | [TodayPage.tsx](../../frontend/src/pages/TodayPage.tsx) |
+| `@Input()` | Props: the function argument, for example `function Card({ title })` | [PlaceholderPage.tsx](../../frontend/src/pages/PlaceholderPage.tsx) |
 | `@Output()` + `EventEmitter` | A callback prop, for example `onSave={() => ...}` | (first one in Phase 3) |
 | Class field for UI state | `useState` hook | [App.tsx](../../frontend/src/app/App.tsx) |
 | `ngOnInit`, `ngOnDestroy` | `useEffect`. Do not use it to load data: use TanStack Query. | - |
 | Service + `HttpClient` + RxJS | A plain `fetch` function + TanStack Query `useQuery` | [health.ts](../../frontend/src/api/health.ts) |
-| `async` pipe, loading flags | `isPending`, `isError`, `data` from `useQuery` | [HomePage.tsx](../../frontend/src/pages/HomePage.tsx) |
+| `async` pipe, loading flags | `isPending`, `isError`, `data` from `useQuery` | (first one in Phase 3, login) |
 | Shared service for app state | React context. Zustand only if necessary (ADR 0003). | - |
 | `Routes` array, `<router-outlet>` | React Router route list, `<Outlet />` | [routes.tsx](../../frontend/src/app/routes.tsx) |
-| `routerLink` | `<Link to="/tasks">` | - |
+| `routerLink`, `routerLinkActive` | `<Link to="/tasks">`, `<NavLink>` (knows the active page) | [MainNav.tsx](../../frontend/src/layout/MainNav.tsx) |
 | Reactive forms + validators | React Hook Form + Zod schema | (Phase 3) |
 | `*ngIf` | `{isOpen && <Panel />}` or a ternary | - |
 | `*ngFor` | `{items.map((item) => <Row key={item.id} item={item} />)}` | - |
 | Pipe | A plain function call inside JSX | - |
-| Component CSS file | Tailwind classes in `className` | [HomePage.tsx](../../frontend/src/pages/HomePage.tsx) |
+| Component CSS file | Tailwind classes in `className`, colour tokens in `index.css` | [index.css](../../frontend/src/index.css) |
+| `@angular/localize`, `i18n` attribute | react-i18next: `const { t } = useTranslation()`, then `t('today.title')` | [en.json](../../frontend/src/i18n/en.json) |
 | Zone.js change detection | React renders again when state or props change | - |
-| `TestBed` | React Testing Library: `render` and `screen` | [HomePage.test.tsx](../../frontend/src/pages/HomePage.test.tsx) |
+| `TestBed` | React Testing Library: `render` and `screen` | [navigation.test.tsx](../../frontend/src/app/navigation.test.tsx) |
 | `HttpClientTestingModule` | MSW: it answers `fetch` calls in tests | [server.ts](../../frontend/src/test/server.ts) |
 | Angular CLI, `ng serve` | Vite, `npm run dev` (the `web` container) | [vite.config.ts](../../frontend/vite.config.ts) |
 | `environment.ts` | `import.meta.env` (Vite) | - |
@@ -52,9 +53,9 @@ This repo adds one library for each other job: React Router, TanStack Query, Rea
 1. [main.tsx](../../frontend/src/main.tsx): start of the app.
 2. [App.tsx](../../frontend/src/app/App.tsx): providers (query client, router).
 3. [routes.tsx](../../frontend/src/app/routes.tsx): URL to page.
-4. [HomePage.tsx](../../frontend/src/pages/HomePage.tsx): one page with a server query.
+4. [AppLayout.tsx](../../frontend/src/layout/AppLayout.tsx) and [TodayPage.tsx](../../frontend/src/pages/TodayPage.tsx): the frame and one page.
 5. [health.ts](../../frontend/src/api/health.ts): one API call with a runtime type check.
-6. [HomePage.test.tsx](../../frontend/src/pages/HomePage.test.tsx): component tests with MSW.
+6. [navigation.test.tsx](../../frontend/src/app/navigation.test.tsx): component tests.
 
 ## Links
 

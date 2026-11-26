@@ -1,0 +1,44 @@
+{
+  "app": {
+    "name": "Pond Habits"
+  },
+  "nav": {
+    "label": "Main",
+    "today": "Today",
+    "focus": "Focus",
+    "tasks": "Tasks",
+    "habits": "Habits",
+    "more": "More"
+  },
+  "pages": {
+    "focus": "Focus",
+    "tasks": "Tasks",
+    "habits": "Habits",
+    "nutrition": "Nutrition",
+    "rewards": "Rewards",
+    "settings": "Settings",
+    "admin": "Admin",
+    "more": "More",
+    "later": "This page comes in a later version."
+  },
+  "today": {
+    "title": "Today",
+    "credits": "Credits",
+    "creditsHint": "Your balance and rewards",
+    "startFocus": "Start focus",
+    "startFocusHint": "One focus session",
+    "tasksHint": "Due today and overdue",
+    "habitsHint": "Tick today's habits",
+    "nutritionHint": "Today's goals"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Go to Today"
+  },
+  "update": {
+    "title": "A new version is ready",
+    "body": "Reload to use it.",
+    "reload": "Reload",
+    "later": "Later"
+  }
+}

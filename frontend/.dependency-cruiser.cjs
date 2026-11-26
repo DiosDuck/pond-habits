@@ -27,8 +27,13 @@ module.exports = {
     {
       name: 'not-to-unresolvable',
       severity: 'error',
+      comment:
+        'Exceptions: Vite virtual modules (made at build time) and the vite-plugin-pwa type reference.',
       from: {},
-      to: { couldNotResolve: true },
+      to: {
+        couldNotResolve: true,
+        pathNot: ['^virtual:pwa-register/', '^vite-plugin-pwa/react$'],
+      },
     },
     {
       name: 'app-code-not-to-dev-deps',
