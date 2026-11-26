@@ -40,5 +40,30 @@
     "body": "Reload to use it.",
     "reload": "Reload",
     "later": "Later"
+  },
+  "common": {
+    "failed": "Something went wrong. Try again."
+  },
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "logout": "Log out",
+    "enterEmail": "Enter your email.",
+    "enterPassword": "Enter your password.",
+    "tooMany": "Too many attempts. Wait a minute, then try again."
+  },
+  "setPassword": {
+    "title": "Set your password",
+    "intro": "Enter the email address that got the link. The link works once and expires after a short time.",
+    "newPassword": "New password",
+    "repeat": "Repeat the new password",
+    "rules": "12 characters or more. A long sentence is a good password.",
+    "submit": "Set password",
+    "done": "Your password is set.",
+    "tooShort": "Use 12 characters or more.",
+    "noMatch": "The passwords do not match.",
+    "linkRejected": "This link is not valid or has expired."
   }
 }

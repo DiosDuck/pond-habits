@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import { setSession, testUser } from '../test/renderApp.tsx'
 import { App } from './App.tsx'
 import { createQueryClient } from './queryClient.ts'
 
@@ -14,7 +15,8 @@ vi.mock('virtual:pwa-register/react', () => ({
 }))
 
 describe('App', () => {
-  it('opens the Today page at /', async () => {
+  it('opens the Today page at / for a logged-in user', async () => {
+    setSession(testUser)
     render(<App />)
 
     expect(
