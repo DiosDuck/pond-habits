@@ -83,7 +83,7 @@ admin: ## Create an admin and mail a set-password link: make admin EMAIL=you@exa
 	@test -n "$(EMAIL)" || { echo 'Usage: make admin EMAIL=you@example.com'; exit 1; }
 	$(PHP) php artisan app:create-admin "$(EMAIL)"
 
-export-user: ## GDPR request: write the data of a user to storage/app/exports/: make export-user EMAIL=...
+export-user: ## GDPR request: write the data of a user to backend/storage/app/private/exports/: make export-user EMAIL=...
 	@test -n "$(EMAIL)" || { echo 'Usage: make export-user EMAIL=user@example.com'; exit 1; }
 	$(PHP) php artisan app:export-user "$(EMAIL)"
 

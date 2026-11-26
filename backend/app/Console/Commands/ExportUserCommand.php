@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 /**
  * Export the data of a user who cannot log in (privacy.md item 14). Run it with "make export-user EMAIL=...".
- * The file goes to storage/app/exports/. Send it to the person, then delete it.
+ * The file goes to backend/storage/app/private/exports/ (git ignores it). Send it to the person, then delete it.
  */
 final class ExportUserCommand extends Command
 {
@@ -34,7 +34,7 @@ final class ExportUserCommand extends Command
         Storage::disk('local')->put($path, (string) json_encode($export->for($user), JSON_PRETTY_PRINT));
         $events->record('user.data_exported', ['user_id' => $user->id, 'by' => 'operator']);
 
-        $this->info('Export written to storage/app/'.$path.'. Send it to the person, then delete the file.');
+        $this->info('Export written to backend/storage/app/private/'.$path.'. Send it to the person, then delete the file.');
 
         return self::SUCCESS;
     }
