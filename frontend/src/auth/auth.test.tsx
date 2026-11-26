@@ -169,7 +169,9 @@ describe('admin links', () => {
     ).toBeInTheDocument()
 
     await router.navigate('/more')
-    const main = await screen.findByRole('main')
+    // Wait for the More page: the router renders the new page a moment later.
+    await screen.findByRole('heading', { level: 1, name: 'More' })
+    const main = screen.getByRole('main')
     expect(within(main).getByRole('link', { name: 'Admin' })).toHaveAttribute(
       'href',
       '/admin',
@@ -186,7 +188,9 @@ describe('admin links', () => {
     ).not.toBeInTheDocument()
 
     await router.navigate('/more')
-    const main = await screen.findByRole('main')
+    // Wait for the More page: the router renders the new page a moment later.
+    await screen.findByRole('heading', { level: 1, name: 'More' })
+    const main = screen.getByRole('main')
     expect(
       within(main).queryByRole('link', { name: 'Admin' }),
     ).not.toBeInTheDocument()
