@@ -15,14 +15,11 @@ describe('Today page', () => {
     ).toBeInTheDocument()
   })
 
-  it('has Admin and Settings links with visible labels in the header', () => {
+  // The Admin link shows for admins only: src/auth/auth.test.tsx checks it.
+  it('has a Settings link with a visible label in the header', () => {
     renderAt('/')
 
     const header = screen.getByRole('banner')
-    expect(within(header).getByRole('link', { name: 'Admin' })).toHaveAttribute(
-      'href',
-      '/admin',
-    )
     expect(
       within(header).getByRole('link', { name: 'Settings' }),
     ).toHaveAttribute('href', '/settings')
@@ -114,7 +111,6 @@ describe('More page', () => {
       ['Nutrition', '/nutrition'],
       ['Rewards', '/rewards'],
       ['Settings', '/settings'],
-      ['Admin', '/admin'],
     ] as const
     for (const [name, href] of links) {
       expect(within(main).getByRole('link', { name })).toHaveAttribute(

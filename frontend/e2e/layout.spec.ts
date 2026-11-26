@@ -1,9 +1,15 @@
 import { expect, test } from '@playwright/test'
 
+import { loginAs } from './auth.ts'
 import { expectNoAxeViolations } from './axe.ts'
 
 // App layout (ADR 0024). The projects use phone viewports (Pixel 7, iPhone 15).
 // These checks need real CSS, so they are E2E tests and not component tests.
+
+// All pages need a login (docs/product/login.md).
+test.beforeEach(async ({ page }) => {
+  await loginAs(page)
+})
 
 test.describe('phone layout', () => {
   test('Today has no tab bar: the cards are the menu', async ({ page }) => {
