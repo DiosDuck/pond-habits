@@ -38,3 +38,28 @@ export async function setPassword(input: {
     password_confirmation: input.password,
   })
 }
+
+// The invited address of a registration link (docs/product/invites.md).
+export async function checkInvite(token: string): Promise<string> {
+  const body = z
+    .object({ email: z.string() })
+    .parse(await apiPost('/api/invites/check', { token }))
+  return body.email
+}
+
+export async function register(input: {
+  token: string
+  name: string
+  password: string
+}): Promise<User> {
+  return userSchema.parse(
+    await apiPost('/api/register', {
+      token: input.token,
+      name: input.name,
+      password: input.password,
+      password_confirmation: input.password,
+      // The browser's time zone (docs/product/README.md). Settings can change it later.
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
+  )
+}

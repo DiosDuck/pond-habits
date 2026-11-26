@@ -104,6 +104,15 @@ return [
         'decay_seconds' => (int) env('AUTH_LOGIN_DECAY_SECONDS', 60),
     ],
 
+    /*
+    | Invites for each admin (docs/product/invites.md). After max_per_hour invites,
+    | the next invites get status 429 for one hour.
+    */
+
+    'invites' => [
+        'max_per_hour' => (int) env('AUTH_INVITES_MAX_PER_HOUR', 20),
+    ],
+
     'passwords' => [
         'users' => [
             'provider' => 'users',

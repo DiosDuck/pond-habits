@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router'
 
+import { AdminPage } from '../admin/AdminPage.tsx'
 import '../i18n/i18n.ts'
 import { AppLayout } from '../layout/AppLayout.tsx'
 import { MorePage } from '../pages/MorePage.tsx'
@@ -15,7 +16,6 @@ const later = [
   'nutrition',
   'rewards',
   'settings',
-  'admin',
 ] as const
 
 export const routes: RouteObject[] = [
@@ -27,6 +27,7 @@ export const routes: RouteObject[] = [
         path: page,
         element: <PlaceholderPage page={page} />,
       })),
+      { path: 'admin', element: <AdminPage /> },
       { path: 'more', element: <MorePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

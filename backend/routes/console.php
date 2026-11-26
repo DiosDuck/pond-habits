@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function (): void {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Daily jobs. The "scheduler" container runs "schedule:work" (compose.yaml).
+// model:prune deletes the rows of each Prunable model, for example expired invites (privacy.md, item 13).
+Schedule::command('model:prune')->dailyAt('03:00');
