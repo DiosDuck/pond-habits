@@ -70,7 +70,7 @@ final readonly class LoginController
         $this->events->record($event, ['user_id' => $userId]);
 
         throw ValidationException::withMessages([
-            'email' => 'The email or password is not correct.',
+            'email' => __('errors.login_failed'),
         ]);
     }
 }

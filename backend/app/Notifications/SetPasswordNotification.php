@@ -30,10 +30,10 @@ final class SetPasswordNotification extends Notification
         $minutes = config()->integer('auth.passwords.users.expire');
 
         return (new MailMessage)
-            ->subject('Set your Pond Habits password')
-            ->line('An account was made for you on Pond Habits.')
-            ->action('Set your password', $url)
-            ->line("The link works once and expires in {$minutes} minutes.")
-            ->line('If you did not expect this mail, you can ignore it.');
+            ->subject(__('mail.set_password.subject'))
+            ->line(__('mail.set_password.intro'))
+            ->action(__('mail.set_password.action'), $url)
+            ->line(__('mail.set_password.expires', ['minutes' => $minutes]))
+            ->line(__('mail.set_password.ignore'));
     }
 }

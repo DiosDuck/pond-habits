@@ -27,7 +27,7 @@ final readonly class DisableUserController
             $events->record('admin.action_refused', ['user_id' => $admin->id]);
 
             throw ValidationException::withMessages([
-                'user' => 'You cannot disable your own account.',
+                'user' => __('errors.disable_self'),
             ]);
         }
 

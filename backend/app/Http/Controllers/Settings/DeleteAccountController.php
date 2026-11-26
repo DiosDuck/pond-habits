@@ -28,14 +28,14 @@ final readonly class DeleteAccountController
         if (! Hash::check($request->string('password')->toString(), $user->password)) {
             $events->record('user.delete_refused', ['user_id' => $user->id]);
 
-            throw ValidationException::withMessages(['password' => 'The password is not correct.']);
+            throw ValidationException::withMessages(['password' => __('errors.password_wrong')]);
         }
 
         if ($user->role === Role::Admin && ! $this->otherActiveAdminExists($user)) {
             $events->record('user.delete_refused', ['user_id' => $user->id]);
 
             throw ValidationException::withMessages([
-                'account' => 'You are the only admin. Another admin must exist first.',
+                'account' => __('errors.only_admin'),
             ]);
         }
 

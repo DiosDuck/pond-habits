@@ -41,7 +41,7 @@ final readonly class SendInviteController
             $this->events->record('invite.refused', ['user_id' => $admin->id]);
 
             throw ValidationException::withMessages([
-                'email' => 'This email address has an account already.',
+                'email' => __('errors.email_taken'),
             ]);
         }
 

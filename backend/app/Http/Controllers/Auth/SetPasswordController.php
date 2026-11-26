@@ -50,7 +50,7 @@ final readonly class SetPasswordController
             $this->events->record('auth.password_link_rejected');
 
             throw ValidationException::withMessages([
-                'token' => 'This link is not valid or has expired.',
+                'token' => __('errors.link_invalid'),
             ]);
         }
 

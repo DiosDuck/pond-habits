@@ -31,10 +31,10 @@ final class InviteNotification extends Notification
         $days = Invite::VALID_DAYS;
 
         return (new MailMessage)
-            ->subject('You are invited to Pond Habits')
-            ->line('You are invited to Pond Habits, a personal tracker for focus, tasks, habits and nutrition.')
-            ->action('Create your account', $url)
-            ->line("The link works once and expires in {$days} days.")
-            ->line('If you did not expect this mail, you can ignore it.');
+            ->subject(__('mail.invite.subject'))
+            ->line(__('mail.invite.intro'))
+            ->action(__('mail.invite.action'), $url)
+            ->line(__('mail.invite.expires', ['days' => $days]))
+            ->line(__('mail.invite.ignore'));
     }
 }
