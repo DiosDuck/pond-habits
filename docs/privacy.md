@@ -17,6 +17,7 @@ Pond Habits stores health-related personal data (nutrition, habits such as smoki
 11. Production smoke tests are read-only and never log in.
 12. Each user sees only the user's own data. The app has no social features.
 13. A pending invite stores the invited email address. The app deletes the invite when it is used, and a daily job deletes expired invites.
+14. A user who cannot log in (for example a disabled user) asks the operator for an export or a deletion. The operator answers within one month (GDPR Art. 15, 17, 20) with `make export-user` or `make delete-user`. These commands use the same code as the Settings page.
 
 ## External services that receive data
 
