@@ -65,5 +65,25 @@
     "tooShort": "Use 12 characters or more.",
     "noMatch": "The passwords do not match.",
     "linkRejected": "This link is not valid or has expired."
+  },
+  "register": {
+    "title": "Create your account",
+    "yourEmail": "Your email",
+    "name": "Name",
+    "password": "Password",
+    "repeat": "Repeat the password",
+    "rules": "12 characters or more. A long sentence is a good password.",
+    "submit": "Create account",
+    "enterName": "Enter your name.",
+    "inviteRejected": "This invite is not valid or has expired."
+  },
+  "admin": {
+    "onlyAdmins": "Only admins can open this page.",
+    "inviteTitle": "Invite a person",
+    "inviteHint": "The person gets a mail with a link. The link works once and expires in 7 days.",
+    "email": "Email",
+    "send": "Send invite",
+    "sent": "Invite sent to {{email}}.",
+    "tooMany": "Too many invites. Try again later."
   }
 }

@@ -36,3 +36,4 @@ An ADR records one decision: the context, the decision and the consequences. All
 | [0022](0022-offline-scope.md) | Offline scope |
 | [0023](0023-public-repo-content.md) | Public repository content |
 | [0024](0024-visual-design.md) | Visual design and navigation (2026-11-26) |
+| [0025](0025-invite-verifies-email.md) | The invite link verifies the email (2026-11-26) |
