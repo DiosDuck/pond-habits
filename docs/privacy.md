@@ -16,6 +16,7 @@ Pond Habits stores health-related personal data (nutrition, habits such as smoki
 10. The backup restore test runs on the VPS. It never runs on a public GitHub runner.
 11. Production smoke tests are read-only and never log in.
 12. Each user sees only the user's own data. The app has no social features.
+13. A pending invite stores the invited email address. The app deletes the invite when it is used, and a daily job deletes expired invites.
 
 ## External services that receive data
 
