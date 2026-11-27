@@ -1,0 +1,90 @@
+# One app stack on the VPS (ADR 0012). Staging and production each run this file as their own
+# Compose project in its own folder on the server, with its own networks, database and volumes:
+#   docker compose -p pond-staging    -f compose.yaml -f compose.staging.yaml    up -d
+#   docker compose -p pond-production -f compose.yaml -f compose.production.yaml up -d
+# Files in that folder, next to these: .env (image and network names, no secrets),
+# app.env and db.env (secrets, mode 0600). See env.example/.
+# The deploy job (Phase 4, task 8) copies these files to the server. Only the edge Caddy
+# (infra/deploy/edge/) publishes ports. No service here publishes a port: Docker's port rules
+# go around ufw (infra/ansible/README.md).
+
+x-app: &app
+  image: ${IMAGE_PREFIX:?}/api:${IMAGE_TAG:?}
+  restart: unless-stopped
+  env_file: [app.env]
+  environment:
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: "5432"
+    LOG_CHANNEL: daily
+    LOG_DAILY_DAYS: "14"
+  volumes:
+    - logs:/var/www/html/storage/logs
+  networks: [app, data]
+  depends_on:
+    db:
+      condition: service_healthy
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  api:
+    <<: *app
+
+  worker:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3", "--max-time=3600"]
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+
+  web:
+    image: ${IMAGE_PREFIX:?}/web:${IMAGE_TAG:?}
+    restart: unless-stopped
+    networks:
+      app: {}
+      edge:
+        # The edge Caddy finds this stack's web container by this name.
+        aliases: ["${COMPOSE_PROJECT_NAME:?}-web"]
+    depends_on: [api]
+    read_only: true
+    tmpfs: [/config, /data]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: [db.env]
+    volumes:
+      - db:/var/lib/postgresql
+    networks: [data]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  # api, workers and web. It has internet access (mail, breached-password check, Sentry).
+  app: {}
+  # The database. "internal": no internet access in or out.
+  data:
+    internal: true
+  # The link to the edge Caddy. Each stack has its own edge network, so staging and
+  # production cannot reach each other.
+  edge:
+    external: true
+    name: ${EDGE_NETWORK:?}
+
+volumes:
+  db: {}
+  logs: {}

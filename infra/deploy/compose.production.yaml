@@ -1,0 +1,23 @@
+# Production (ADR 0012). Limits stop one runaway container from taking the whole server,
+# and they leave room for staging, the edge Caddy and the monthly restore test.
+services:
+  api:
+    deploy:
+      resources:
+        limits: {cpus: "1.5", memory: 1g}
+  worker:
+    deploy:
+      resources:
+        limits: {cpus: "0.5", memory: 512m}
+  scheduler:
+    deploy:
+      resources:
+        limits: {cpus: "0.25", memory: 256m}
+  web:
+    deploy:
+      resources:
+        limits: {cpus: "0.5", memory: 256m}
+  db:
+    deploy:
+      resources:
+        limits: {cpus: "1.5", memory: 2g}
