@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Nightly backup of the production database (ADR 0013). A systemd timer starts it (roles/backup).
+# pg_dump runs in the production db container; restic runs in its own container, encrypts the
+# dump on this server and uploads it to B2. Then the old snapshots go (7 daily, 4 weekly,
+# 6 monthly) and the heartbeat gets a ping: success, or "/fail" on any error.
+# Settings: /etc/pond-backup/env (mode 0600, root): RESTIC_REPOSITORY, RESTIC_PASSWORD,
+# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, RESTIC_IMAGE, BACKUP_HEARTBEAT_URL.
+set -euo pipefail
+
+# Export each value, so that "docker run -e NAME" passes it to the restic container.
+set -a
+# shellcheck source=/dev/null
+source "${POND_BACKUP_ENV:-/etc/pond-backup/env}"
+set +a
+: "${RESTIC_REPOSITORY:?}" "${RESTIC_PASSWORD:?}" "${RESTIC_IMAGE:?}" "${BACKUP_HEARTBEAT_URL:?}"
+
+ping() { curl -fsS -m 10 --retry 3 -o /dev/null "$1" || echo "pond-backup: heartbeat ping failed" >&2; }
+# One place reports a failure: the exit hook, with the exit code. It runs once.
+finish() {
+  local code=$?
+  if [ "$code" -ne 0 ]; then
+    echo "pond-backup: FAILED (exit $code)" >&2
+    ping "$BACKUP_HEARTBEAT_URL/fail"
+  fi
+}
+trap finish EXIT
+
+restic() {
+  docker run --rm -i --network "${RESTIC_NETWORK:-bridge}" \
+    -e RESTIC_REPOSITORY -e RESTIC_PASSWORD -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+    -v pond-restic-cache:/root/.cache/restic "$RESTIC_IMAGE" "$@"
+}
+
+db=$(docker ps -q -f label=com.docker.compose.project=pond-production -f label=com.docker.compose.service=db)
+if [ -z "$db" ]; then
+  echo "pond-backup: the production database container does not run" >&2
+  exit 1
+fi
+
+# The first run makes the repository.
+restic cat config > /dev/null 2>&1 || restic init
+
+echo "pond-backup: dump and upload"
+# shellcheck disable=SC2016 # the variables expand inside the db container
+docker exec "$db" sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' |
+  restic backup --stdin --stdin-filename production.dump --host pond --tag production --quiet
+
+echo "pond-backup: remove old snapshots"
+restic forget --host pond --tag production --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune --quiet
+
+# A quick check of the repository structure (it does not download the data).
+restic check --quiet
+
+ping "$BACKUP_HEARTBEAT_URL"
+echo "pond-backup: OK"

@@ -25,6 +25,7 @@ Ansible sets up the VPS from the repo, so a new server is the same as the old on
 | `docker` | Docker Engine and Compose from Docker's repository. Log rotation, `no-new-privileges`. |
 | `edge` | The edge Caddy (`/opt/pond-edge`): the only container with public ports. HTTPS, HSTS, staging basic auth and `noindex`, `www.` redirect. `caddy validate` checks each new Caddyfile. |
 | `tailnet_serve` | On the tailnet only: Mailpit UI (`:8025`) and staging without basic auth (`:8081`, API docs at `/docs/api`). Plain HTTP inside WireGuard. |
+| `backup` | Nightly backup and monthly restore test (systemd timers, ADR 0013): `pg_dump` into restic, encrypted on the server, to B2; heartbeat pings. Off until the inventory has the values. |
 
 Two facts to know:
 

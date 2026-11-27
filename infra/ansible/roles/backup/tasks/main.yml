@@ -1,0 +1,83 @@
+---
+- name: Set up the backups when the private inventory has the values
+  when: backup_restic_repository is defined
+  vars:
+    backup_jobs:
+      - {name: pond-backup, description: "Pond Habits nightly backup", on_calendar: "{{ backup_on_calendar }}"}
+      - {name: pond-restore-test, description: "Pond Habits monthly restore test", on_calendar: "{{ restore_on_calendar }}"}
+  block:
+    - name: Check the backup values
+      ansible.builtin.assert:
+        that:
+          - backup_restic_repository is match('^s3:https://')
+          - backup_restic_password | length >= 20
+          - backup_b2_key_id | length > 0
+          - backup_b2_key | length > 0
+          - backup_heartbeat_url is match('^https://')
+          - restore_heartbeat_url is match('^https://')
+          - backup_on_calendar | length > 0
+          - restore_on_calendar | length > 0
+        fail_msg: "Set all backup values in the private inventory (see roles/backup/defaults/main.yml)."
+        quiet: true
+
+    - name: Install the backup and restore-test scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/usr/local/sbin/{{ item }}"
+        owner: root
+        group: root
+        mode: "0750"
+      loop: [pond-backup, pond-restore-test]
+
+    - name: Make the settings folder (root only)
+      ansible.builtin.file:
+        path: /etc/pond-backup
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Write the backup settings and secrets
+      ansible.builtin.template:
+        src: env.j2
+        dest: /etc/pond-backup/env
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+
+    - name: Install the systemd services
+      ansible.builtin.template:
+        src: pond-job.service.j2
+        dest: "/etc/systemd/system/{{ item.name }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ backup_jobs }}"
+      loop_control:
+        label: "{{ item.name }}"
+      notify: Reload systemd
+
+    - name: Install the systemd timers
+      ansible.builtin.template:
+        src: pond-job.timer.j2
+        dest: "/etc/systemd/system/{{ item.name }}.timer"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ backup_jobs }}"
+      loop_control:
+        label: "{{ item.name }}"
+      notify: Reload systemd
+
+    - name: Reload systemd before the timers change
+      ansible.builtin.meta: flush_handlers
+
+    - name: Turn the timers on or off
+      ansible.builtin.systemd_service:
+        name: "{{ item.name }}.timer"
+        enabled: "{{ backup_timers_enabled }}"
+        state: "{{ 'started' if backup_timers_enabled else 'stopped' }}"
+      loop: "{{ backup_jobs }}"
+      loop_control:
+        label: "{{ item.name }}"

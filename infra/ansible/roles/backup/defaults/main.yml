@@ -1,0 +1,13 @@
+---
+# Backups (ADR 0013). The private inventory sets the live values:
+#   backup_restic_repository  s3:https://<B2 S3 endpoint>/<bucket>
+#   backup_restic_password    the restic password (also in the password manager: without it,
+#                             no backup can be read)
+#   backup_b2_key_id, backup_b2_key       the B2 application key (only this bucket)
+#   backup_heartbeat_url, restore_heartbeat_url   Better Stack heartbeat URLs
+#   backup_on_calendar, restore_on_calendar       systemd times (live values: private)
+# The role does nothing until backup_restic_repository is set.
+backup_restic_image: restic/restic:0.20.0
+backup_postgres_image: postgres:18-alpine
+# Turn on after the first production deploy: before it, the backup has no database to read.
+backup_timers_enabled: false

@@ -30,3 +30,4 @@
     - role: docker
     - role: edge
     - role: tailnet_serve
+    - role: backup
