@@ -37,6 +37,24 @@ if [[ ! "$APP_KEY" =~ ^base64:[A-Za-z0-9+/]{43}=$ ]] || [ "$(printf '%s' "${APP_
   exit 1
 fi
 
+# A release merge starts the production deploy and the image build at the same time. Wait until
+# both images of this commit exist on GHCR (at most 30 minutes), before the server changes.
+for image in api web; do
+  ref="ghcr.io/diosduck/pond-habits/$image:$tag"
+  for attempt in $(seq 1 60); do
+    if docker manifest inspect "$ref" > /dev/null 2>&1; then
+      echo "ci-deploy: $ref exists"
+      break
+    fi
+    if [ "$attempt" = 60 ]; then
+      echo "ci-deploy: $ref does not exist after 30 minutes. Check the 'Images' run of this commit." >&2
+      exit 1
+    fi
+    echo "ci-deploy: wait for $ref (the 'Images' run builds it)"
+    sleep 30
+  done
+done
+
 umask 077
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
