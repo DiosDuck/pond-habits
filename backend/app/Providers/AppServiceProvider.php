@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\User;
+use App\Support\Alerts\Alerts;
+use App\Support\Alerts\SentryAlerts;
 use App\Support\DomainEvents\DomainEventLog;
 use App\Support\DomainEvents\LogDomainEventLog;
 use Dedoc\Scramble\Scramble;
@@ -25,6 +27,8 @@ final class AppServiceProvider extends ServiceProvider
             DomainEventLog::class,
             static fn (): DomainEventLog => new LogDomainEventLog(Log::channel('domain')),
         );
+
+        $this->app->singleton(Alerts::class, SentryAlerts::class);
 
         // ADR 0021: the API docs route does not exist in production. It is disabled in the code.
         if ($this->app->environment('production')) {

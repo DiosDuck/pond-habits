@@ -117,4 +117,20 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    | The daily mail cap (ADR 0014): below the free plan of the mail provider, with a budget for
+    | each mail type. The server can change the values with these variables. A warning comes when
+    | warn_at_percent of the daily total is used, and when a limit stops a mail.
+    */
+
+    'cap' => [
+        'daily_total' => (int) env('MAIL_CAP_DAILY_TOTAL', 250),
+        'warn_at_percent' => (int) env('MAIL_CAP_WARN_AT_PERCENT', 80),
+        'per_type' => [
+            'invite' => (int) env('MAIL_CAP_INVITE', 50),
+            'set_password' => (int) env('MAIL_CAP_SET_PASSWORD', 50),
+            'password_reset' => (int) env('MAIL_CAP_PASSWORD_RESET', 150),
+        ],
+    ],
+
 ];

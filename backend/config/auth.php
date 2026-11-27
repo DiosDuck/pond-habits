@@ -146,6 +146,18 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    | One warning to the owner when the failed logins of all visitors reach the threshold in a
+    | window of window_minutes (ADR 0014). The server can change the values.
+    */
+
+    'alerts' => [
+        'failed_logins' => [
+            'threshold' => (int) env('AUTH_ALERT_FAILED_LOGINS', 30),
+            'window_minutes' => (int) env('AUTH_ALERT_WINDOW_MINUTES', 15),
+        ],
+    ],
+
     // Demo users (database/seeders). Staging sets a random value on each deploy (ADR 0012).
     'demo_password' => env('DEMO_PASSWORD', 'password'),
 
