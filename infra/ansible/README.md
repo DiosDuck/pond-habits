@@ -23,7 +23,7 @@ Ansible sets up the VPS from the repo, so a new server is the same as the old on
 | `firewall` | ufw: 80, 443 (TCP and UDP) and Tailscale's port from the internet. SSH on the tailnet interface only. |
 | `fail2ban` | SSH jail with the default values |
 | `docker` | Docker Engine and Compose from Docker's repository. Log rotation, `no-new-privileges`. |
-| `edge` | The edge Caddy (`/opt/pond-edge`): the only container with public ports. HTTPS, HSTS, staging basic auth and `noindex`, `www.` and `api.` redirects. `caddy validate` checks each new Caddyfile. |
+| `edge` | The edge Caddy (`/opt/pond-edge`): the only container with public ports. HTTPS, HSTS, staging basic auth and `noindex`, `www.` redirect. `caddy validate` checks each new Caddyfile. |
 
 Two facts to know:
 

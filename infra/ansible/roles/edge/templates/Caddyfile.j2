@@ -23,13 +23,8 @@ staging.pondhabits.com {
 	reverse_proxy pond-staging-web:80
 }
 
-# The app uses one origin (ADR 0005): the old API host names send the visitor to the main host.
-www.pondhabits.com, api.pondhabits.com {
+# The app uses one origin (ADR 0005), so there is no API host name. "www." goes to the main host.
+www.pondhabits.com {
 	import hsts
 	redir https://pondhabits.com{uri} permanent
-}
-
-api.staging.pondhabits.com {
-	import hsts
-	redir https://staging.pondhabits.com{uri} permanent
 }
