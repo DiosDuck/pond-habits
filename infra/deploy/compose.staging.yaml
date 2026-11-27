@@ -1,0 +1,46 @@
+# Staging (ADR 0012): demo data only, all mail goes to Mailpit, resource limits so that
+# staging cannot take resources from production.
+x-limits: &limits
+  deploy:
+    resources:
+      limits: {cpus: "0.25", memory: 256m}
+
+services:
+  api:
+    environment:
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    deploy:
+      resources:
+        limits: {cpus: "0.5", memory: 384m}
+  worker:
+    <<: *limits
+    environment:
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+  scheduler:
+    <<: *limits
+  web:
+    deploy:
+      resources:
+        limits: {cpus: "0.25", memory: 128m}
+  db:
+    deploy:
+      resources:
+        limits: {cpus: "0.5", memory: 512m}
+
+  # Catches all staging mail. Its web UI is only on the tailnet (Phase 4, task 10).
+  mailpit:
+    image: axllent/mailpit:v1.34
+    restart: unless-stopped
+    networks: [app]
+    read_only: true
+    # Mailpit keeps the mail in a database file in /tmp: in memory, lost on restart.
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    deploy:
+      resources:
+        limits: {cpus: "0.1", memory: 64m}

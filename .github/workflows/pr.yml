@@ -207,3 +207,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=web-${{ matrix.arch }}
       - name: Smoke test (GET /, /health, /manifest.webmanifest)
         run: bash scripts/image-smoke.sh pond-habits-api:ci pond-habits-web:ci
+      - name: Stack smoke test (the server Compose files for staging and production)
+        run: |
+          bash scripts/stack-smoke.sh staging pond-habits-api:ci pond-habits-web:ci
+          bash scripts/stack-smoke.sh production pond-habits-api:ci pond-habits-web:ci

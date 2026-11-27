@@ -93,10 +93,12 @@ delete-user: ## GDPR request: delete a user and all data (asks first): make dele
 
 ## Images
 
-images: ## Build the prod images (api, web) for this machine, then run the smoke test
+images: ## Build the prod images (api, web) for this machine, then run the smoke tests
 	docker build --target prod -t pond-habits-api:local backend
 	docker build -f infra/caddy/Dockerfile -t pond-habits-web:local .
 	bash scripts/image-smoke.sh pond-habits-api:local pond-habits-web:local
+	bash scripts/stack-smoke.sh staging pond-habits-api:local pond-habits-web:local
+	bash scripts/stack-smoke.sh production pond-habits-api:local pond-habits-web:local
 
 ## Quality
 
