@@ -17,6 +17,7 @@ x-app: &app
     DB_HOST: db
     DB_PORT: "5432"
     LOG_CHANNEL: daily
+    LOG_DOMAIN_DRIVER: daily
     LOG_DAILY_DAYS: "14"
   volumes:
     - logs:/var/www/html/storage/logs

@@ -93,6 +93,16 @@ for service in api worker scheduler web db; do
   fi
 done
 
+# The domain event log writes one dated file for each day (privacy baseline item 8: 14 days).
+compose exec -T api php artisan tinker --execute \
+  "app(App\\Support\\DomainEvents\\DomainEventLog::class)->record('smoke.checked');" > /dev/null
+if compose exec -T api test -s "storage/logs/domain-$(date -u +%Y-%m-%d).log"; then
+  echo "stack-smoke ($stack): the domain event log uses a dated daily file"
+else
+  echo "ERROR ($stack): no dated domain log file (LOG_DOMAIN_DRIVER=daily missing?)"
+  fail=1
+fi
+
 # The database network has no internet access.
 if compose exec -T db sh -c 'wget -q -T 5 -O /dev/null http://example.com' > /dev/null 2>&1; then
   echo "ERROR ($stack): the database container reached the internet"

@@ -149,8 +149,11 @@ return [
         ],
 
         // Domain events (ADR 0008): one JSON line for each event. IDs only, no personal data.
+        // The server sets LOG_DOMAIN_DRIVER=daily: one file for each day, deleted after
+        // LOG_DAILY_DAYS (privacy.md item 8). Local work keeps one file.
         'domain' => [
-            'driver' => 'single',
+            'driver' => env('LOG_DOMAIN_DRIVER', 'single'),
+            'max_files' => env('LOG_DAILY_DAYS', 14),
             'tap' => [AddPersonalDataProcessor::class],
             'path' => env('LOG_DOMAIN_PATH', storage_path('logs/domain.log')),
             'level' => 'info',
