@@ -28,6 +28,10 @@ write_compose_env() {
     umask 077
     printf 'IMAGE_PREFIX=%s\nIMAGE_TAG=%s\nEDGE_NETWORK=%s\n' \
       ghcr.io/diosduck/pond-habits "$1" "edge-$stack" > .env
+    # Staging: the local ports for "tailscale serve" (infra/ansible/roles/tailnet_serve).
+    if [ "$stack" = staging ]; then
+      printf 'STAGING_WEB_PORT=8081\nMAILPIT_UI_PORT=8025\n' >> .env
+    fi
   )
 }
 

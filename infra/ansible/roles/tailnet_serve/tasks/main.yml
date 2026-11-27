@@ -1,0 +1,25 @@
+---
+- name: Allow the tool ports on the tailnet interface only
+  community.general.ufw:
+    rule: allow
+    interface: tailscale0
+    direction: in
+    port: "{{ item.port | string }}"
+    proto: tcp
+  loop: "{{ tailnet_serve_ports }}"
+  loop_control:
+    label: "{{ item.port }} ({{ item.name }})"
+
+- name: Read the tailscale serve setup
+  ansible.builtin.command: tailscale serve status --json
+  register: tailnet_serve_status
+  changed_when: false
+
+- name: Serve each tool port on the tailnet
+  ansible.builtin.command: "tailscale serve --bg --http={{ item.port }} http://127.0.0.1:{{ item.port }}"
+  loop: "{{ tailnet_serve_ports }}"
+  loop_control:
+    label: "{{ item.port }} ({{ item.name }})"
+  when: >-
+    ((tailnet_serve_status.stdout | default('{}', true) | from_json).TCP | default({}))[item.port | string] is not defined
+  changed_when: true

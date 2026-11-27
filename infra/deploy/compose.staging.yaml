@@ -23,6 +23,10 @@ services:
   scheduler:
     <<: *limits
   web:
+    # Only on the server itself (127.0.0.1). "tailscale serve" makes it reachable on the tailnet,
+    # without the basic auth, for the API docs (infra/ansible/roles/tailnet_serve).
+    # No value (local smoke test): a random port.
+    ports: ["127.0.0.1:${STAGING_WEB_PORT:-}:80"]
     deploy:
       resources:
         limits: {cpus: "0.25", memory: 128m}
@@ -31,11 +35,13 @@ services:
       resources:
         limits: {cpus: "0.5", memory: 512m}
 
-  # Catches all staging mail. Its web UI is only on the tailnet (Phase 4, task 10).
+  # Catches all staging mail. Its web UI is on 127.0.0.1 only; "tailscale serve" makes it
+  # reachable on the tailnet (infra/ansible/roles/tailnet_serve).
   mailpit:
     image: axllent/mailpit:v1.34
     restart: unless-stopped
     networks: [app]
+    ports: ["127.0.0.1:${MAILPIT_UI_PORT:-}:8025"]
     read_only: true
     # Mailpit keeps the mail in a database file in /tmp: in memory, lost on restart.
     tmpfs: [/tmp]

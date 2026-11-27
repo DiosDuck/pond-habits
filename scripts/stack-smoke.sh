@@ -101,6 +101,23 @@ if printf '%s' "$headers" | grep -qi '^server:'; then
   fail=1
 fi
 
+# The API docs (ADR 0021): staging only, with a CSP for the docs viewer; production has no route.
+docs_code=$(curl -s -D "$out.h" -o /dev/null -w '%{http_code}' "$base/docs/api")
+if [ "$stack" = staging ]; then
+  if [ "$docs_code" = 200 ] && grep -qi '^content-security-policy:.*https://unpkg.com' "$out.h"; then
+    echo "stack-smoke ($stack): GET /docs/api -> 200 with the docs CSP"
+  else
+    echo "ERROR ($stack): GET /docs/api -> $docs_code, or no docs CSP"
+    fail=1
+  fi
+elif [ "$docs_code" = 404 ]; then
+  echo "stack-smoke ($stack): GET /docs/api -> 404"
+else
+  echo "ERROR ($stack): GET /docs/api -> $docs_code (want 404 in production)"
+  fail=1
+fi
+rm -f "$out.h"
+
 # Each long-running service must still run (no restart loop).
 for service in api worker scheduler web db; do
   state=$(compose ps --format '{{.State}}' "$service")
