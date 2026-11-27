@@ -1,7 +1,9 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { realpathSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // Paths that the Laravel API serves (see infra/caddy/Caddyfile.local).
@@ -48,6 +50,15 @@ export default defineConfig({
     allowedHosts: ['localhost', 'caddy'],
     // The browser opens the app through Caddy on port 8080 (one origin).
     hmr: { clientPort: 8080 },
+    fs: {
+      // StrykerJS runs the tests in a sandbox folder with a link to node_modules.
+      // Vite follows the link and refuses files outside the sandbox (for example the "?raw" icons).
+      // So also allow the real node_modules folder.
+      allow: [
+        searchForWorkspaceRoot(process.cwd()),
+        realpathSync(resolve(process.cwd(), 'node_modules')),
+      ],
+    },
   },
   test: {
     environment: 'jsdom',
