@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Auth\LoginFailureWatch;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -23,7 +24,7 @@ final readonly class LoginController
     // A bcrypt hash of a random text that nobody knows. Used when the email has no account.
     private const string DUMMY_HASH = '$2y$12$tHvGD/bg/Lo8bSRyFX9yF.dQrzetwZXX8VDC0OvlCiHrOFrLR7r0i';
 
-    public function __construct(private DomainEventLog $events) {}
+    public function __construct(private DomainEventLog $events, private LoginFailureWatch $failures) {}
 
     public function __invoke(LoginRequest $request): UserResource
     {
@@ -67,6 +68,7 @@ final readonly class LoginController
     private function fail(string $key, string $event, ?string $userId): never
     {
         RateLimiter::hit($key, config()->integer('auth.login.decay_seconds'));
+        $this->failures->failed();
         $this->events->record($event, ['user_id' => $userId]);
 
         throw ValidationException::withMessages([
