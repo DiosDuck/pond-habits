@@ -146,4 +146,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    // Demo users (database/seeders). Staging sets a random value on each deploy (ADR 0012).
+    'demo_password' => env('DEMO_PASSWORD', 'password'),
+
 ];

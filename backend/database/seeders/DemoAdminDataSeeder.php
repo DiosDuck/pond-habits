@@ -30,7 +30,7 @@ final class DemoAdminDataSeeder extends Seeder
         $disabled = User::query()->firstOrNew(['email' => 'disabled@demo']);
         $disabled->forceFill([
             'name' => 'Demo Disabled',
-            'password' => 'password',
+            'password' => DemoPassword::value(),
             'role' => Role::User,
             'email_verified_at' => $disabled->email_verified_at ?? now(),
             'disabled_at' => $disabled->disabled_at ?? now(),
