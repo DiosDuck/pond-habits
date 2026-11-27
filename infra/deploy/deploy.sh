@@ -51,9 +51,11 @@ roll_back() {
 }
 trap roll_back ERR
 
+# /sanctum/csrf-cookie encrypts a cookie: it fails when APP_KEY is wrong.
 smoke_test() {
   compose exec -T web wget -q -O - http://127.0.0.1/health | grep -q '"status":"ok"' \
-    && compose exec -T web wget -q -O /dev/null http://127.0.0.1/
+    && compose exec -T web wget -q -O /dev/null http://127.0.0.1/ \
+    && compose exec -T web wget -q -O /dev/null http://127.0.0.1/sanctum/csrf-cookie
 }
 
 step "image tag $tag (now: ${previous:-none})"
