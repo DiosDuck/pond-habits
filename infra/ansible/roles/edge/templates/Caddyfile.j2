@@ -9,14 +9,21 @@
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 }
 
+# The API docs are never public. On staging they are on the tailnet only (roles/tailnet_serve).
+(no_docs) {
+	respond /docs* 404
+}
+
 pondhabits.com {
 	import hsts
+	import no_docs
 	reverse_proxy pond-production-web:80
 }
 
 staging.pondhabits.com {
 	import hsts
 	header X-Robots-Tag "noindex, nofollow"
+	import no_docs
 	basic_auth {
 		{{ staging_basic_auth_user }} {{ staging_basic_auth_hash }}
 	}

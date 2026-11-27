@@ -29,3 +29,4 @@
     - role: fail2ban
     - role: docker
     - role: edge
+    - role: tailnet_serve

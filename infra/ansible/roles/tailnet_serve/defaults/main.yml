@@ -1,0 +1,8 @@
+---
+# Staging tools on the tailnet only (ADR 0012, ADR 0015). "tailscale serve" listens on the
+# tailnet address and forwards to a port that the staging stack publishes on 127.0.0.1.
+# Plain HTTP: WireGuard already encrypts tailnet traffic, and HTTPS would put the tailnet name
+# into the public certificate logs. The Tailscale access rules decide which devices can connect.
+tailnet_serve_ports:
+  - {port: 8025, name: Mailpit UI}
+  - {port: 8081, name: staging without basic auth (API docs at /docs/api)}
