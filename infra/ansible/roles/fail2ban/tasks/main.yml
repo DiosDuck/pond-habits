@@ -1,0 +1,26 @@
+---
+# fail2ban bans an address after repeated failed logins. The values are fail2ban's defaults:
+# rate limits are not published (ADR 0015).
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+
+- name: Turn on the SSH jail (reads the systemd journal)
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/pond.local
+    content: |
+      # Managed by Ansible (infra/ansible/roles/fail2ban).
+      [sshd]
+      enabled = true
+      backend = systemd
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Start fail2ban at boot
+  ansible.builtin.systemd_service:
+    name: fail2ban
+    enabled: true
+    state: started

@@ -1,0 +1,5 @@
+---
+# ansible-lint settings (make lint-infra).
+profile: production
+exclude_paths:
+  - .ansible/

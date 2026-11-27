@@ -1,0 +1,55 @@
+---
+- name: Make the admin user (sudo with a password)
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    shell: /bin/bash
+    groups: [sudo]
+    append: true
+    password: "{{ admin_password_hash | default(omit) }}"
+    update_password: on_create
+
+- name: Allow only the owner's key for the admin user
+  ansible.posix.authorized_key:
+    user: "{{ admin_user }}"
+    key: "{{ admin_ssh_public_key }}"
+    exclusive: true
+
+- name: Make the deploy user and lock the default user
+  when: not users_only_admin
+  block:
+    # The docker package uses this group. Membership gives root-level control of Docker.
+    - name: Make the docker group
+      ansible.builtin.group:
+        name: docker
+        system: true
+
+    - name: Make the deploy user (no sudo, no password)
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        shell: /bin/bash
+        groups: [docker]
+        append: true
+        password: "!"
+
+    - name: Set the deploy job's key (none until task 8)
+      ansible.posix.authorized_key:
+        user: "{{ deploy_user }}"
+        key: "{{ deploy_ssh_public_key }}"
+        exclusive: true
+      when: deploy_ssh_public_key | length > 0
+
+    - name: Remove the password-free sudo of the default user
+      ansible.builtin.file:
+        path: /etc/sudoers.d/90-cloud-init-users
+        state: absent
+
+    - name: Lock the default user
+      ansible.builtin.user:
+        name: "{{ users_provider_default }}"
+        password_lock: true
+        shell: /usr/sbin/nologin
+
+    - name: Remove the keys of the default user
+      ansible.builtin.file:
+        path: "/home/{{ users_provider_default }}/.ssh/authorized_keys"
+        state: absent

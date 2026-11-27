@@ -1,0 +1,44 @@
+---
+# Bootstrap (run once on a new server): make provision-bootstrap
+# Connects over the public IPv4 as the provider's default user. Makes the admin user and
+# joins the tailnet. After this run, all other runs go over the tailnet (site.yml).
+- name: Bootstrap a new server
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars_prompt:
+    - name: admin_password_hash
+      prompt: "Password hash for the admin user's sudo (make it with: openssl passwd -6)"
+      private: true
+    - name: tailscale_auth_key
+      prompt: "Tailscale auth key (one-off, pre-approved, tag:server)"
+      private: true
+
+  pre_tasks:
+    - name: Check the private inventory
+      ansible.builtin.assert:
+        that: required_vars | map('extract', vars) | select('defined') | list | length == required_vars | length
+        fail_msg: "The private inventory must set: {{ required_vars | join(', ') }}"
+        quiet: true
+
+    - name: Check the password hash format (SHA-512 crypt)
+      ansible.builtin.assert:
+        that: admin_password_hash is match('^\$6\$')
+        fail_msg: "Give a hash from 'openssl passwd -6', not the password."
+        quiet: true
+
+  roles:
+    - role: base
+    - role: users
+      vars:
+        users_only_admin: true
+    - role: tailscale
+
+  post_tasks:
+    - name: Show the next step
+      ansible.builtin.debug:
+        msg: >-
+          Test the new login before the next step:
+          ssh {{ admin_user }}@{{ server_hostname }} (over the tailnet).
+          Then set ansible_host to the tailnet name in the private inventory and run: make provision

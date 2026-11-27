@@ -1,0 +1,27 @@
+// Tailscale policy file (ADR 0011). Copy it to the admin console: Access controls > Edit file.
+// The admin console is the source of truth. Keep this copy the same, so the review is in git.
+// No live values here: no device names, no addresses, no emails.
+{
+	// Only an admin (the owner) can give these tags to a device or to a key.
+	"tagOwners": {
+		"tag:server": ["autogroup:admin"], // the VPS
+		"tag:ci":     ["autogroup:admin"], // GitHub Actions runners (ephemeral)
+	},
+
+	"grants": [
+		// The owner's own devices can reach all devices.
+		{"src": ["autogroup:member"], "dst": ["*"], "ip": ["*"]},
+		// A deploy job can reach only SSH on the server.
+		{"src": ["tag:ci"], "dst": ["tag:server"], "ip": ["tcp:22"]},
+		// No rule starts from tag:server: a server cannot open a connection to the laptop or to CI.
+	],
+
+	// Tailscale checks these when the file is saved. A wrong rule stops the save.
+	"tests": [
+		{
+			"src":    "tag:ci",
+			"accept": ["tag:server:22"],
+			"deny":   ["tag:server:80", "tag:server:5432"],
+		},
+	],
+}

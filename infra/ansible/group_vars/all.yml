@@ -1,0 +1,14 @@
+---
+# Public defaults. The live values (addresses, user names, host name, times) are in the
+# private inventory (local/inventory/hosts.yml), never here (ADR 0023).
+
+# Variables that the private inventory must set. The playbooks stop when one is missing.
+required_vars:
+  - admin_user # the owner's login on the server
+  - admin_ssh_public_key # the owner's public key (the content, one line)
+  - deploy_user # the user of the deploy job (Phase 4, task 8)
+  - server_hostname # the host name on the server and in the tailnet
+  - unattended_reboot_time # "HH:MM" server time for a reboot after a security update
+
+# The deploy job's public key. Empty until task 8: then the deploy user has no key and cannot log in.
+deploy_ssh_public_key: ""

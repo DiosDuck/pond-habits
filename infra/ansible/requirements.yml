@@ -1,0 +1,7 @@
+---
+# Ansible collections of the runner image. Renovate updates the pins.
+collections:
+  - name: ansible.posix
+    version: 2.2.2
+  - name: community.general
+    version: 14.0.1
