@@ -30,6 +30,8 @@ Pond Habits stores health-related personal data (nutrition, habits such as smoki
 | Browser push service | Encrypted push message | Web Push notifications |
 | Better Stack | Heartbeat pings, no user data | Job monitoring |
 | UptimeRobot | Public page checks, no user data | Uptime monitoring |
+| OVHcloud | All app data, on a VPS in the United Kingdom (EU adequacy) | Hosting ([ADR 0011](adr/0011-hosting-vps.md)) |
+| Cloudflare | DNS queries only, no user data (no proxy) | DNS ([ADR 0026](adr/0026-dns-without-proxy.md)) |
 | Tailscale | Device and connection metadata | Private SSH access |
 | Grafana Cloud (later) | Logs with user ID only, metrics | Monitoring |
 
