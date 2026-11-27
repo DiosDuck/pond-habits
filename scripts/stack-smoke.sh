@@ -19,6 +19,7 @@ compose() {
     -f infra/deploy/compose.yaml -f "infra/deploy/compose.$stack.yaml" -f "$dir/compose.smoke.yaml" "$@"
 }
 
+# shellcheck disable=SC2329 # called by the EXIT trap
 cleanup() {
   compose down -v --remove-orphans > /dev/null 2>&1 || true
   docker network rm "$edge" > /dev/null 2>&1 || true
