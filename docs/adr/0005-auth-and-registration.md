@@ -1,6 +1,6 @@
 # ADR 0005: Authentication and registration
 
-Status: Accepted (2026-11-20)
+Status: Accepted (2026-11-20). Changed in place on 2026-11-27 with the owner's approval: see "Change 2026-11-27".
 
 ## Decision
 
@@ -22,3 +22,9 @@ Status: Accepted (2026-11-20)
 - Staging: a Mailpit container on the VPS catches all mail. No staging mail reaches a real inbox. The Mailpit UI is only on the tailnet.
 - Production: Resend or Brevo (free tier). The choice is made before the first production deploy.
 - The domain needs SPF, DKIM and DMARC records.
+
+## Change 2026-11-27
+
+- Production mail: **Brevo** (Free plan, a French company). SMTP relay on port 587 with an SMTP key. The key is limited to the VPS addresses ("Authorised IPs" in Brevo).
+- DNS: the Brevo code and two DKIM records (CNAME, "DNS only"). DMARC passes through the DKIM signature, so SPF stays `v=spf1 -all` and DMARC stays `p=reject` ([ADR 0026](0026-dns-without-proxy.md)).
+- The production secrets are `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_FROM_ADDRESS` in the GitHub Environment `production`.
