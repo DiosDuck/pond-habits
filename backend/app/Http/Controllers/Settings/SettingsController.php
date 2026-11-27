@@ -7,34 +7,25 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Requests\UpdateSettingsRequest;
 use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Profile, time zone and theme (docs/product/settings.md).
  */
 final readonly class SettingsController
 {
-    public function show(Request $request): JsonResponse
+    public function show(#[CurrentUser] User $user): JsonResponse
     {
-        return new JsonResponse($this->settings($this->user($request)));
+        return new JsonResponse($this->settings($user));
     }
 
-    public function update(UpdateSettingsRequest $request, DomainEventLog $events): JsonResponse
+    public function update(UpdateSettingsRequest $request, DomainEventLog $events, #[CurrentUser] User $user): JsonResponse
     {
-        $user = $this->user($request);
         $user->forceFill($request->validated())->save();
         $events->record('user.settings_updated', ['user_id' => $user->id]);
 
         return new JsonResponse($this->settings($user));
-    }
-
-    private function user(Request $request): User
-    {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
-
-        return $user;
     }
 
     /**

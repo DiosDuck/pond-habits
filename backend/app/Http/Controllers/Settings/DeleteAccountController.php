@@ -9,6 +9,7 @@ use App\Enums\Role;
 use App\Http\Requests\DeleteAccountRequest;
 use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,11 +21,8 @@ use Illuminate\Validation\ValidationException;
  */
 final readonly class DeleteAccountController
 {
-    public function __invoke(DeleteAccountRequest $request, AccountDeletion $deletion, DomainEventLog $events): Response
+    public function __invoke(DeleteAccountRequest $request, AccountDeletion $deletion, DomainEventLog $events, #[CurrentUser] User $user): Response
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
-
         if (! Hash::check($request->string('password')->toString(), $user->password)) {
             $events->record('user.delete_refused', ['user_id' => $user->id]);
 
