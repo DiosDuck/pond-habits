@@ -1,6 +1,6 @@
 # ADR 0026: DNS at Cloudflare without the proxy
 
-Status: Accepted (2026-11-27)
+Status: Accepted (2026-11-27). Changed in place on 2026-11-27 with the owner's approval: see "Change 2026-11-27".
 
 ## Context
 
@@ -18,6 +18,10 @@ Cloudflare recommends "Proxied".
 - CAA records allow `letsencrypt.org` and `sectigo.com` (ZeroSSL). Cloudflare adds CAA records for its own certificate authorities while Universal SSL is on.
 - Until the mail provider is set up, the domain says that it sends no mail: SPF `v=spf1 -all` and DMARC `p=reject`. The mail setup changes these records.
 - TTL: "Auto" (5 minutes for "DNS only" records).
+
+## Change 2026-11-27
+
+- The `api` and `api.staging` records are removed: the app uses one origin ([ADR 0020](0020-name-and-domain.md)). The address records are now for `@`, `www` and `staging`.
 
 ## Alternatives
 
