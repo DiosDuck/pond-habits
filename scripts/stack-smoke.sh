@@ -85,6 +85,22 @@ check / 200 '<div id="root">'
 check /health 200 '"status":"ok"'
 check /api/me 401 'Unauthenticated'
 
+# The security headers (ADR 0015) come from the web image.
+headers=$(curl -s -D - -o /dev/null "$base/")
+for header in "content-security-policy: default-src 'self'" "x-content-type-options: nosniff" \
+  "referrer-policy:" "permissions-policy:" "x-frame-options: DENY"; do
+  if printf '%s' "$headers" | grep -qiF -- "$header"; then
+    echo "stack-smoke ($stack): header $header"
+  else
+    echo "ERROR ($stack): missing header '$header'"
+    fail=1
+  fi
+done
+if printf '%s' "$headers" | grep -qi '^server:'; then
+  echo "ERROR ($stack): the response has a Server header"
+  fail=1
+fi
+
 # Each long-running service must still run (no restart loop).
 for service in api worker scheduler web db; do
   state=$(compose ps --format '{{.State}}' "$service")

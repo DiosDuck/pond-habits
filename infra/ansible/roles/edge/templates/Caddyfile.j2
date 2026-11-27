@@ -1,0 +1,30 @@
+# Edge Caddy (managed by Ansible: infra/ansible/roles/edge). ADR 0012, ADR 0015, ADR 0026.
+# Automatic HTTPS: Caddy gets and renews the certificates (Let's Encrypt, ZeroSSL as fallback).
+# The security headers and the CSP come from the web image (infra/caddy/Caddyfile.prod).
+{
+	admin off
+}
+
+(hsts) {
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+}
+
+pondhabits.com {
+	import hsts
+	reverse_proxy pond-production-web:80
+}
+
+staging.pondhabits.com {
+	import hsts
+	header X-Robots-Tag "noindex, nofollow"
+	basic_auth {
+		{{ staging_basic_auth_user }} {{ staging_basic_auth_hash }}
+	}
+	reverse_proxy pond-staging-web:80
+}
+
+# The app uses one origin (ADR 0005), so there is no API host name. "www." goes to the main host.
+www.pondhabits.com {
+	import hsts
+	redir https://pondhabits.com{uri} permanent
+}
