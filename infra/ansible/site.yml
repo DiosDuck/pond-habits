@@ -10,7 +10,7 @@
   pre_tasks:
     - name: Check the private inventory
       ansible.builtin.assert:
-        that: required_vars | map('extract', vars) | select('defined') | list | length == required_vars | length
+        that: query('ansible.builtin.varnames', '^(' ~ required_vars | join('|') ~ ')$') | length == required_vars | length
         fail_msg: "The private inventory must set: {{ required_vars | join(', ') }}"
         quiet: true
 
