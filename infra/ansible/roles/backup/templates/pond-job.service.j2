@@ -1,0 +1,15 @@
+# Managed by Ansible (infra/ansible/roles/backup).
+[Unit]
+Description={{ item.description }}
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/{{ item.name }}
+{% if item.name == 'pond-restore-test' %}
+# The restore test is not urgent: production keeps the CPU and the disk first.
+Nice=10
+IOSchedulingClass=idle
+{% endif %}

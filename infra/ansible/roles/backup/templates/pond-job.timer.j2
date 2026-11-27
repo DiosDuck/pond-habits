@@ -1,0 +1,12 @@
+# Managed by Ansible (infra/ansible/roles/backup).
+[Unit]
+Description={{ item.description }} (timer)
+
+[Timer]
+OnCalendar={{ item.on_calendar }}
+# Run a missed job after a reboot.
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

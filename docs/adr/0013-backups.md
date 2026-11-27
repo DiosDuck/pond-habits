@@ -1,6 +1,6 @@
 # ADR 0013: Backups and restore tests
 
-Status: Accepted (2026-11-20)
+Status: Accepted (2026-11-20). Changed in place on 2026-11-27 with the owner's approval: see "Change 2026-11-27".
 
 ## Decision
 
@@ -21,6 +21,14 @@ Status: Accepted (2026-11-20)
 ## Key safety
 
 The restic password is in GitHub Secrets and in the owner's password manager. Without it, no backup can be read.
+
+## Change 2026-11-27
+
+- Systemd timers on the VPS start the backup and the restore test (Ansible role `backup`). Each job runs official containers only: `pg_dump` in the production database container, restic in the `restic/restic` image. There is no long-running backup container.
+- The restic password, the B2 key and the heartbeat URLs are in the private Ansible inventory and in a root-only file on the server (`/etc/pond-backup/env`, mode 0600), not in GitHub Secrets: the backup is server setup (`make provision`), not part of a deploy. The owner keeps a copy in the password manager.
+- B2 bucket in the EU (eu-central). The B2 key works only for this bucket.
+- The restore test checks the snapshot age (less than 26 hours) and that `migrations` and `users` have rows. It runs in a container with no network.
+- Each job reports its result once, from its exit hook: a success ping, or a `/fail` ping.
 
 ## Consequences
 
