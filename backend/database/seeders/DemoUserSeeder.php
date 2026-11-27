@@ -11,7 +11,7 @@ use RuntimeException;
 
 /**
  * Demo users for local, CI (E2E) and staging (docs/product/accounts.md). Never in production.
- * The local password is "password". Staging sets random passwords (Phase 4).
+ * The password comes from DemoPassword: "password" locally, a random value on staging.
  * More demo users come with their features.
  */
 final class DemoUserSeeder extends Seeder
@@ -22,6 +22,9 @@ final class DemoUserSeeder extends Seeder
             throw new RuntimeException('Demo users are not allowed in production.');
         }
 
+        // Check the password before the first write.
+        DemoPassword::value();
+
         $this->demoUser('admin@demo', 'Demo Admin', Role::Admin);
         $this->demoUser('new@demo', 'Demo New', Role::User);
     }
@@ -31,7 +34,7 @@ final class DemoUserSeeder extends Seeder
         $user = User::query()->firstOrNew(['email' => $email]);
         $user->forceFill([
             'name' => $name,
-            'password' => 'password',
+            'password' => DemoPassword::value(),
             'role' => $role,
             'email_verified_at' => $user->email_verified_at ?? now(),
             'disabled_at' => null,

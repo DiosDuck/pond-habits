@@ -1,5 +1,5 @@
-# Deploy to staging (ADR 0012). STUB: Phase 4 adds the real steps.
-# It starts when the "Images" workflow is green on main, so the images for this commit exist.
+# Deploy to staging (ADR 0012). It starts when the "Images" workflow is green on main,
+# so the images for this commit exist on GHCR.
 name: Deploy staging
 
 on:
@@ -22,23 +22,29 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    # The GitHub Environment holds the staging secrets (Phase 4).
     environment: staging
+    permissions:
+      contents: read
+      # The Tailscale login uses the job's OIDC token (no stored Tailscale secret).
+      id-token: write
     steps:
-      - name: Plan (stub)
-        run: |
-          tag="sha-${HEAD_SHA::7}"
-          {
-            echo "## Deploy staging (stub)"
-            echo ""
-            echo "Images: \`api:$tag\`, \`web:$tag\`"
-            echo ""
-            echo "Phase 4 adds these steps:"
-            echo "1. Join the tailnet with an ephemeral key."
-            echo "2. Pull the images on the server and start them."
-            echo "3. Run the migrations. Seed the demo data with random passwords."
-            echo "4. Smoke test (GET only)."
-            echo "5. OWASP ZAP baseline scan."
-          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Join the tailnet (ephemeral, tag:ci)
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+      - name: Deploy (migrate, seed demo data, smoke test)
+        run: bash infra/deploy/ci-deploy.sh staging "sha-${HEAD_SHA::7}"
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
