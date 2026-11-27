@@ -24,7 +24,7 @@ export GITLEAKS_IMAGE
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
 	admin export-user delete-user build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
 	install install-backend install-frontend audit licence-check secrets-scan selftest images \
-	mutation-backend mutation-frontend
+	mutation-backend mutation-frontend ansible-image provision-check provision-bootstrap provision lint-infra
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -145,6 +145,33 @@ mutation-backend:
 mutation-frontend:
 	$(NODE) npm run -s mutation
 
+## Server (ADR 0011). The private inventory is local/inventory/hosts.yml (git ignores it).
+
+ANSIBLE_IMAGE := pond-habits-ansible:local
+# --network host: the container uses the host DNS (MagicDNS names) and the tailnet.
+# The SSH agent socket goes in, the private key stays on the host.
+ANSIBLE_RUN = docker run --rm -it --network host --user "$(HOST_UID):$(HOST_GID)" \
+	-v "$(CURDIR)/infra/ansible":/infra/ansible:ro -v "$(CURDIR)/local/inventory":/inventory \
+	-v "$(SSH_AUTH_SOCK)":/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent $(ANSIBLE_IMAGE)
+
+ansible-image:
+	docker build -q -t $(ANSIBLE_IMAGE) --build-arg UID=$(HOST_UID) --build-arg GID=$(HOST_GID) infra/ansible
+
+provision-check:
+	@test -f local/inventory/hosts.yml || { echo "Missing local/inventory/hosts.yml (see infra/ansible/README.md)"; exit 1; }
+	@test -S "$(SSH_AUTH_SOCK)" || { echo "No SSH agent. Run: eval \$$(ssh-agent) && ssh-add"; exit 1; }
+
+provision-bootstrap: provision-check ansible-image ## First run on a new server (public IP, provider user)
+	$(ANSIBLE_RUN) ansible-playbook bootstrap.yml
+
+provision: provision-check ansible-image ## Set up the server over the tailnet (asks the sudo password)
+	$(ANSIBLE_RUN) ansible-playbook site.yml --ask-become-pass
+
+lint-infra: ansible-image ## Check the Ansible files (ansible-lint, syntax)
+	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -v "$(CURDIR)/infra/ansible":/infra/ansible \
+		-e ANSIBLE_DEPRECATION_WARNINGS=false $(ANSIBLE_IMAGE) \
+		sh -c 'ansible-playbook -i localhost, --syntax-check bootstrap.yml site.yml && ansible-lint --offline -q'
+
 lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, scenarios, workflows
 	bash scripts/md-line-limit.sh
 	bash scripts/link-check.sh
@@ -153,6 +180,7 @@ lint-repo: ## Check the docs and the repo: line limit, links, sensitive data, sc
 	bash scripts/actions-pin-check.sh
 	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -v "$(CURDIR)":/repo:ro -w /repo \
 		$(ACTIONLINT_IMAGE) -no-color
+	$(MAKE) lint-infra
 
 selftest: ## Check that the guard hooks and the check scripts still catch bad input
 	bash .claude/hooks/selftest.sh

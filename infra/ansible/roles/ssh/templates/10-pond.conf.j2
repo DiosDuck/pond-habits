@@ -1,0 +1,11 @@
+# Managed by Ansible (infra/ansible/roles/ssh). ADR 0011, ADR 0015.
+# The firewall allows SSH only on the tailnet interface (roles/firewall).
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+AllowUsers {{ admin_user }} {{ deploy_user }}
+X11Forwarding no
+AllowAgentForwarding no
+MaxAuthTries 3

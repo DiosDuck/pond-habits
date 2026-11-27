@@ -1,0 +1,46 @@
+---
+# Tailscale from the official package repository. The server joins the tailnet with tag:server
+# (infra/tailscale/policy.hujson). Tagged devices have no key expiry.
+- name: Add the Tailscale package repository
+  ansible.builtin.deb822_repository:
+    name: tailscale
+    types: deb
+    uris: https://pkgs.tailscale.com/stable/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    signed_by: "https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_facts['distribution_release'] }}.noarmor.gpg"
+
+- name: Install Tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    update_cache: true
+
+- name: Start Tailscale at boot
+  ansible.builtin.systemd_service:
+    name: tailscaled
+    enabled: true
+    state: started
+
+- name: Read the Tailscale state
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Stop when the server is not in the tailnet and no key is given
+  ansible.builtin.assert:
+    that: tailscale_auth_key is defined
+    fail_msg: "The server is not in the tailnet. Run make provision-bootstrap with a new auth key."
+    quiet: true
+  when: (tailscale_status.stdout | default('{}') | from_json).BackendState | default('') != 'Running'
+
+- name: Join the tailnet
+  ansible.builtin.command: >-
+    tailscale up
+    --auth-key={{ tailscale_auth_key }}
+    --hostname={{ server_hostname }}
+    --advertise-tags=tag:server
+  when: (tailscale_status.stdout | default('{}') | from_json).BackendState | default('') != 'Running'
+  no_log: true
+  changed_when: true

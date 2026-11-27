@@ -1,0 +1,36 @@
+---
+- name: Set the host name
+  ansible.builtin.hostname:
+    name: "{{ server_hostname }}"
+
+- name: Use UTC as the server time zone (the app stores UTC)
+  community.general.timezone:
+    name: Etc/UTC
+
+- name: Install the base packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - unattended-upgrades
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Turn on the daily package update and the security upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reboot after a security update that needs it, at a quiet time
+  ansible.builtin.template:
+    src: 52pond-unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/52pond-unattended-upgrades
+    owner: root
+    group: root
+    mode: "0644"

@@ -1,0 +1,13 @@
+---
+# sshd reads the files in sshd_config.d in name order, and the first value wins.
+# "10-" comes before the provider's "50-cloud-init.conf", so these values win.
+- name: Harden the SSH server
+  ansible.builtin.template:
+    src: 10-pond.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-pond.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Check the SSH configuration
+    - Restart SSH

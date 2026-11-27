@@ -1,0 +1,30 @@
+---
+# Server setup (ADR 0011, ADR 0015): make provision
+# Runs as the admin user over the tailnet. Safe to run again: each task changes only what differs.
+# The public firewall rule for SSH closes in this run, so it must never run over the public IP.
+- name: Set up the server
+  hosts: all
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Check the private inventory
+      ansible.builtin.assert:
+        that: query('ansible.builtin.varnames', '^(' ~ required_vars | join('|') ~ ')$') | length == required_vars | length
+        fail_msg: "The private inventory must set: {{ required_vars | join(', ') }}"
+        quiet: true
+
+    - name: Stop when the connection does not use the tailnet
+      ansible.builtin.assert:
+        that: ansible_host is search('\.ts\.net$') or ansible_host is match('^100\.')
+        fail_msg: "Set ansible_host to the tailnet name first. This run closes SSH on the public address."
+        quiet: true
+
+  roles:
+    - role: base
+    - role: tailscale
+    - role: users
+    - role: ssh
+    - role: firewall
+    - role: fail2ban
+    - role: docker

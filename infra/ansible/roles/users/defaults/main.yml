@@ -1,0 +1,6 @@
+---
+# Bootstrap makes only the admin user. The full run also makes the deploy user and locks the
+# provider's default user.
+users_only_admin: false
+# The default user of the provider's Ubuntu image. Bootstrap logs in with it once.
+users_provider_default: ubuntu

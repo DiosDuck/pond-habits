@@ -1,0 +1,62 @@
+---
+# ufw: the internet reaches only HTTP and HTTPS (Caddy) and Tailscale's direct-connection port.
+# SSH is open only on the tailnet interface.
+# Important: Docker writes its own firewall rules for published ports, and ufw does not see them.
+# So the Compose files publish only Caddy's ports 80 and 443 (Phase 4, task 6).
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: Deny incoming connections by default
+  community.general.ufw:
+    direction: incoming
+    default: deny
+
+- name: Allow outgoing connections by default
+  community.general.ufw:
+    direction: outgoing
+    default: allow
+
+- name: Allow HTTP and HTTPS from the internet
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+  loop:
+    - {port: "80", proto: tcp}
+    - {port: "443", proto: tcp}
+    - {port: "443", proto: udp} # HTTP/3
+  loop_control:
+    label: "{{ item.port }}/{{ item.proto }}"
+
+- name: Allow Tailscale direct connections (WireGuard)
+  community.general.ufw:
+    rule: allow
+    port: "41641"
+    proto: udp
+
+- name: Allow SSH on the tailnet interface only
+  community.general.ufw:
+    rule: allow
+    interface: tailscale0
+    direction: in
+    port: "22"
+    proto: tcp
+
+- name: Remove a public SSH rule from the provider image, if there is one
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+    delete: true
+
+- name: Remove a public rule for port 22, if there is one
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    delete: true
+
+- name: Turn on the firewall
+  community.general.ufw:
+    state: enabled
