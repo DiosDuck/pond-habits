@@ -8,6 +8,7 @@ use App\Auth\UserSessions;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,11 +21,8 @@ use Illuminate\Validation\ValidationException;
  */
 final readonly class ChangePasswordController
 {
-    public function __invoke(ChangePasswordRequest $request, DomainEventLog $events, UserSessions $sessions): Response
+    public function __invoke(ChangePasswordRequest $request, DomainEventLog $events, UserSessions $sessions, #[CurrentUser] User $user): Response
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
-
         if (! Hash::check($request->string('current_password')->toString(), $user->password)) {
             $events->record('auth.password_change_refused', ['user_id' => $user->id]);
 

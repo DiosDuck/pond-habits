@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Invite;
 use App\Models\User;
 use App\Support\DomainEvents\DomainEventLog;
-use Illuminate\Http\Request;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response;
 
 /**
@@ -15,11 +15,8 @@ use Illuminate\Http\Response;
  */
 final readonly class CancelInviteController
 {
-    public function __invoke(Request $request, Invite $invite, DomainEventLog $events): Response
+    public function __invoke(Invite $invite, DomainEventLog $events, #[CurrentUser] User $admin): Response
     {
-        $admin = $request->user();
-        abort_unless($admin instanceof User, 401);
-
         $invite->delete();
         $events->record('admin.invite_cancelled', ['invite_id' => $invite->id, 'admin_id' => $admin->id]);
 

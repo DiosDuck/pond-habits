@@ -9,6 +9,7 @@ use App\Models\Invite;
 use App\Models\User;
 use App\Notifications\InviteNotification;
 use App\Support\DomainEvents\DomainEventLog;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Notification;
@@ -23,12 +24,9 @@ final readonly class SendInviteController
 {
     public function __construct(private DomainEventLog $events) {}
 
-    public function __invoke(SendInviteRequest $request): JsonResponse
+    public function __invoke(SendInviteRequest $request, #[CurrentUser] User $admin): JsonResponse
     {
         $email = Str::lower(trim($request->string('email')->toString()));
-        $admin = $request->user();
-        abort_unless($admin instanceof User, 401);
-
         $key = 'invites:'.$admin->id;
         if (RateLimiter::tooManyAttempts($key, config()->integer('auth.invites.max_per_hour'))) {
             throw new ThrottleRequestsException(
