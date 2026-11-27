@@ -32,6 +32,12 @@ services:
       MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
+      # The daily mail cap is for the server (ADR 0014). Local work and the E2E tests send many
+      # mails each day, so their limits are very high.
+      MAIL_CAP_DAILY_TOTAL: "1000000"
+      MAIL_CAP_INVITE: "1000000"
+      MAIL_CAP_SET_PASSWORD: "1000000"
+      MAIL_CAP_PASSWORD_RESET: "1000000"
 
   worker:
     <<: *php

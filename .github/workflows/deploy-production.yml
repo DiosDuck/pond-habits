@@ -18,7 +18,8 @@ jobs:
   deploy:
     name: deploy-production
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # 30 minutes to wait for the images (ci-deploy.sh), then the deploy.
+    timeout-minutes: 50
     environment: production
     permissions:
       contents: read
