@@ -5,6 +5,7 @@
 # Usage: ci-deploy.sh <staging|production> <image tag>
 # Environment: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS, APP_KEY, DB_PASSWORD;
 # production also MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS.
+# Optional: SENTRY_LARAVEL_DSN (empty: no error reports from this stack).
 # shellcheck disable=SC2029 # $stack and $tag expand on the runner on purpose (checked values)
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
@@ -62,6 +63,9 @@ target="$DEPLOY_USER@$DEPLOY_HOST"
   echo "SANCTUM_STATEFUL_DOMAINS=${url#https://}"
   echo "CACHE_STORE=database"
   echo "QUEUE_CONNECTION=database"
+  if [ -n "${SENTRY_LARAVEL_DSN:-}" ]; then
+    echo "SENTRY_LARAVEL_DSN=$SENTRY_LARAVEL_DSN"
+  fi
   if [ "$stack" = production ]; then
     echo "MAIL_MAILER=smtp"
     echo "MAIL_HOST=$MAIL_HOST"

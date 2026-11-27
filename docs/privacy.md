@@ -25,7 +25,7 @@ Pond Habits stores health-related personal data (nutrition, habits such as smoki
 |---|---|---|
 | Have I Been Pwned | First 5 characters of the SHA-1 hash of a new password (k-anonymity) | Block known breached passwords |
 | Brevo (France), mail provider | Recipient email, mail content | Invites, verification, password reset ([ADR 0005](adr/0005-auth-and-registration.md)) |
-| Sentry | Error data, user ID, no email | Error tracking |
+| Sentry (EU region, Germany) | Error data and the user ID. No email, name, IP address, cookies or request bodies. | Error tracking (ADR 0014) |
 | Backblaze B2 | Encrypted backup files only | Off-site backup |
 | Browser push service | Encrypted push message | Web Push notifications |
 | Better Stack | Heartbeat pings, no user data | Job monitoring |

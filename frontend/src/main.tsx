@@ -10,10 +10,21 @@ import '@fontsource/nunito/800.css'
 
 import { App } from './app/App.tsx'
 import './index.css'
+import { sentryOptions } from './monitoring/sentry.ts'
 import { startTheme } from './theme/theme.ts'
 
 // The saved theme before the first render, so the page does not flash in the wrong colours.
 startTheme()
+
+// Error reports (ADR 0014): only on the real hosts and only with a DSN. The SDK loads as a
+// separate file, so the main bundle stays small.
+const sentry = sentryOptions(
+  window.location.hostname,
+  import.meta.env.VITE_SENTRY_DSN,
+)
+if (sentry !== undefined) {
+  void import('@sentry/react').then((Sentry) => Sentry.init(sentry))
+}
 
 const root = document.getElementById('root')
 if (root === null) {

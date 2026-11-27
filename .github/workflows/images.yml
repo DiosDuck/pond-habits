@@ -68,6 +68,9 @@ jobs:
           context: .
           file: infra/caddy/Dockerfile
           platforms: linux/${{ matrix.arch }}
+          # The browser Sentry DSN, a repository variable (not a secret): the browser gets it anyway.
+          build-args: |
+            VITE_SENTRY_DSN=${{ vars.SENTRY_FRONTEND_DSN }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
