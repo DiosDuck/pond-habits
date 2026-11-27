@@ -28,6 +28,14 @@ if [ ${#missing[@]} -gt 0 ]; then
   exit 1
 fi
 
+# Laravel needs "base64:" and a key of 32 bytes (AES-256). A wrong key breaks each request with a
+# session, so stop here, before the server changes.
+if [[ ! "$APP_KEY" =~ ^base64:[A-Za-z0-9+/]{43}=$ ]] || [ "$(printf '%s' "${APP_KEY#base64:}" | base64 -d 2> /dev/null | wc -c)" != 32 ]; then
+  echo "ci-deploy: APP_KEY in the '$stack' environment must be 'base64:' and 32 random bytes," >&2
+  echo "ci-deploy: no quotes, no spaces. Make one with: echo \"base64:\$(openssl rand -base64 32)\"" >&2
+  exit 1
+fi
+
 umask 077
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
