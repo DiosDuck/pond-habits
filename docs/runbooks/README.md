@@ -7,6 +7,14 @@ Step-by-step procedures for the server. Read the whole procedure before you star
 | [deploy.md](deploy.md) | You release to production, a deploy fails, you roll back, or you change a secret or a server fact |
 | [restore.md](restore.md) | Data is lost or wrong, a migration broke data, or the server is lost |
 
+## Alerts (all by email, ADR 0014)
+
+| Service | Watches | Note |
+|---|---|---|
+| UptimeRobot | `https://pondhabits.com/health` every 5 minutes | Production only: the free plan cannot log in to staging. A broken staging deploy fails its own smoke test. |
+| Sentry (EU) | Errors in the backend and the browser | Projects `pond-backend`, `pond-frontend`. Spike protection, a rate limit on each key, inbound filters. |
+| Better Stack | The nightly backup and the monthly restore test | A missing ping or a `/fail` ping is an alert |
+
 ## What you need
 
 - Your laptop (or another device) in the tailnet, with your SSH key.

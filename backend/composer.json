@@ -12,7 +12,9 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "monolog/monolog": "^3.13",
-        "psr/log": "^3.0"
+        "psr/log": "^3.0",
+        "sentry/sentry": "^4.38",
+        "sentry/sentry-laravel": "^4.31"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

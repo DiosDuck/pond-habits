@@ -6,6 +6,7 @@ declare(strict_types=1);
 // The developer applies the change on purpose.
 
 use Rector\Config\RectorConfig;
+use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -23,4 +24,6 @@ return RectorConfig::configure()
         typeDeclarations: true,
         earlyReturn: true,
     )
+    // Config files must stay cacheable (php artisan config:cache): no closures there.
+    ->withSkip([ArrayToFirstClassCallableRector::class => [__DIR__.'/config']])
     ->withCache(__DIR__.'/storage/framework/cache/rector');

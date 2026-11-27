@@ -48,6 +48,7 @@ jobs:
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SENTRY_LARAVEL_DSN: ${{ secrets.SENTRY_LARAVEL_DSN }}
 
   # OWASP ZAP baseline scan of the new staging deploy (ADR 0015): passive, fails on a
   # high-risk alert. It goes through the public HTTPS address with the staging login.

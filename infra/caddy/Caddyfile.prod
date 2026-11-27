@@ -14,10 +14,11 @@
 	encode zstd gzip
 
 	# Only our own files. No inline scripts, no other sites, no frames, no plugins.
+	# connect-src also allows our Sentry organisation in the EU region (ADR 0014).
 	# One CSP for each path group: Caddy applies the more specific matcher first, so a general
 	# header would overwrite the docs CSP below.
 	@app not path /docs /docs/*
-	header @app Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+	header @app Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://o4512505718964224.ingest.de.sentry.io; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 	header {
 		X-Content-Type-Options nosniff

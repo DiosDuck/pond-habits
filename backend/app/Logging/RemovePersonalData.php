@@ -40,10 +40,12 @@ final class RemovePersonalData implements ProcessorInterface
     }
 
     /**
+     * Also used for Sentry events (SentryEventScrubber).
+     *
      * @param  array<mixed>  $values
      * @return array<mixed>
      */
-    private function cleanArray(array $values): array
+    public function cleanArray(array $values): array
     {
         $clean = [];
 
@@ -91,7 +93,8 @@ final class RemovePersonalData implements ProcessorInterface
         return $clean;
     }
 
-    private function cleanText(string $text): string
+    /** Also used for Sentry events (SentryEventScrubber). */
+    public function cleanText(string $text): string
     {
         return (string) preg_replace(array_keys(self::TEXT_PATTERNS), array_values(self::TEXT_PATTERNS), $text);
     }

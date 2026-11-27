@@ -148,6 +148,19 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // The Sentry package adds these two channels when they are missing, without the personal
+        // data processor. They are defined here with it. The app does not log to them now.
+        'sentry' => [
+            'driver' => 'sentry',
+            'tap' => [AddPersonalDataProcessor::class],
+        ],
+
+        'sentry_logs' => [
+            'driver' => 'sentry_logs',
+            'tap' => [AddPersonalDataProcessor::class],
+            'level' => 'warning',
+        ],
+
         // Domain events (ADR 0008): one JSON line for each event. IDs only, no personal data.
         // The server sets LOG_DOMAIN_DRIVER=daily: one file for each day, deleted after
         // LOG_DAILY_DAYS (privacy.md item 8). Local work keeps one file.

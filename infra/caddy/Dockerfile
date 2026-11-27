@@ -5,6 +5,8 @@
 FROM node:26-alpine AS frontend
 
 WORKDIR /app/frontend
+# The browser Sentry DSN (ADR 0014). Not a secret: the browser gets it anyway. Empty: Sentry off.
+ARG VITE_SENTRY_DSN=""
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
