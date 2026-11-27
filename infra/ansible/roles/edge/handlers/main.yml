@@ -1,0 +1,13 @@
+---
+- name: Start the edge Caddy
+  ansible.builtin.command: docker compose -p pond-edge up -d --wait --remove-orphans
+  args:
+    chdir: "{{ edge_dir }}"
+  changed_when: true
+
+# Caddy reads the Caddyfile only at start. "admin off" means no live reload, so restart it.
+- name: Reload the edge Caddy
+  ansible.builtin.command: docker compose -p pond-edge up -d --wait --force-recreate
+  args:
+    chdir: "{{ edge_dir }}"
+  changed_when: true

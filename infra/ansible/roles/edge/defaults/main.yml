@@ -1,0 +1,7 @@
+---
+# The edge Caddy (ADR 0012, ADR 0015): the only container with public ports. It ends TLS and sends
+# each host name to the web container of its stack. The staging basic auth comes from the private
+# inventory: staging_basic_auth_user and staging_basic_auth_hash (from "caddy hash-password").
+edge_dir: /opt/pond-edge
+edge_caddy_image: caddy:2.11-alpine
+edge_networks: [edge-staging, edge-production]

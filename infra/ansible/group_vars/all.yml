@@ -9,6 +9,8 @@ required_vars:
   - deploy_user # the user of the deploy job (Phase 4, task 8)
   - server_hostname # the host name on the server and in the tailnet
   - unattended_reboot_time # "HH:MM" server time for a reboot after a security update
+  - staging_basic_auth_user # the user name for staging (edge Caddy)
+  - staging_basic_auth_hash # the bcrypt hash of its password (caddy hash-password)
 
 # The deploy job's public key. Empty until task 8: then the deploy user has no key and cannot log in.
 deploy_ssh_public_key: ""

@@ -1,0 +1,64 @@
+---
+- name: Check the staging basic auth values
+  ansible.builtin.assert:
+    that:
+      - staging_basic_auth_user is defined
+      - staging_basic_auth_user is match('^[a-z0-9_-]+$')
+      - staging_basic_auth_hash is defined
+      - staging_basic_auth_hash is match('^\$2[aby]\$')
+    fail_msg: "Set staging_basic_auth_user and staging_basic_auth_hash (a bcrypt hash from 'caddy hash-password')."
+    quiet: true
+
+- name: Make the edge folder (root only)
+  ansible.builtin.file:
+    path: "{{ edge_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Make the edge networks of the stacks
+  ansible.builtin.command: "docker network create {{ item }}"
+  loop: "{{ edge_networks }}"
+  register: edge_network
+  changed_when: edge_network.rc == 0
+  failed_when: edge_network.rc != 0 and 'already exists' not in edge_network.stderr
+
+- name: Copy the edge Compose file
+  ansible.builtin.copy:
+    src: compose.yaml
+    dest: "{{ edge_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Start the edge Caddy
+
+- name: Set the edge image
+  ansible.builtin.copy:
+    dest: "{{ edge_dir }}/.env"
+    content: "EDGE_CADDY_IMAGE={{ edge_caddy_image }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Start the edge Caddy
+
+- name: Write the Caddyfile (checked with "caddy validate" before it is used)
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ edge_dir }}/Caddyfile"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "docker run --rm -v %s:/etc/caddy/Caddyfile:ro {{ edge_caddy_image }} caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile"
+  notify: Reload the edge Caddy
+
+- name: Run the handlers now, so that the next task sees the new state
+  ansible.builtin.meta: flush_handlers
+
+- name: Check that the edge Caddy runs
+  ansible.builtin.command: docker compose -p pond-edge ps --status running --services
+  args:
+    chdir: "{{ edge_dir }}"
+  register: edge_running
+  changed_when: false
+  failed_when: "'caddy' not in edge_running.stdout_lines"
