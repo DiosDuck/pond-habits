@@ -1,0 +1,2 @@
+# ZAP rules that the owner reviewed (scripts/zap-baseline.sh). They are listed in each scan,
+# but never fail it. Format: rule ID, a tab, the reason. Keep this list short.

@@ -58,12 +58,15 @@ Each night, and by hand. GitHub sends an email to the owner when a run fails.
 | `mutation-frontend` | `make mutation-frontend` | StrykerJS mutation score 60% or more. The report is an artifact for 14 days. |
 | `dependencies` | `make audit` | New security issues in packages that did not change |
 
-## Deploy workflows (stubs until Phase 4)
+## Deploy workflows
 
-- `deploy-staging.yml`: after a green "Images" run on `main`. Environment `staging`.
-- `deploy-production.yml`: on a tag `v*`. Environment `production` (Phase 4 adds the owner approval).
+| Workflow | Job | When | What it does |
+|---|---|---|---|
+| `deploy-staging.yml` | `deploy-staging` | After a green "Images" run on `main` | Deploy to staging ([infra/deploy/README.md](../infra/deploy/README.md)) |
+| `deploy-staging.yml` | `zap-baseline` | After `deploy-staging` | `make zap-baseline`: OWASP ZAP passive scan of staging with the staging login. Fails on a high-risk alert. |
+| `deploy-production.yml` | `deploy-production` | On a tag `v*`, after the owner's approval | Deploy to production, with a database dump first |
 
-Now they only write the plan in the run summary. They deploy nothing.
+The ZAP job prints a list of alerts (risk, rule ID, name) in the run summary. It uploads no report, because the Actions artifacts of a public repository are public. For the details, run `make zap-baseline URL=...` on your machine. A reviewed rule that must not fail the scan goes in `.zap/ignore.tsv`, with the reason.
 
 ## Required checks on `main`
 

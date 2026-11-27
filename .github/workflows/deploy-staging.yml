@@ -48,3 +48,23 @@ jobs:
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+  # OWASP ZAP baseline scan of the new staging deploy (ADR 0015): passive, fails on a
+  # high-risk alert. It goes through the public HTTPS address with the staging login.
+  zap:
+    name: zap-baseline
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: staging
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: ZAP baseline scan (https://staging.pondhabits.com)
+        run: make zap-baseline URL=https://staging.pondhabits.com/
+        env:
+          ZAP_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH_USER }}:${{ secrets.STAGING_BASIC_AUTH_PASSWORD }}

@@ -17,14 +17,15 @@ E2E := $(COMPOSE) run --rm e2e
 # Tool images. Renovate updates these lines (.github/renovate.json5).
 GITLEAKS_IMAGE := ghcr.io/gitleaks/gitleaks:v8.24.0
 ACTIONLINT_IMAGE := rhysd/actionlint:1.7.12
-export GITLEAKS_IMAGE
+ZAP_IMAGE := ghcr.io/zaproxy/zaproxy:2.17.0
+export GITLEAKS_IMAGE ZAP_IMAGE
 
 .DEFAULT_GOAL := help
 .PHONY: help setup up down ps logs build shell migrate seed api-spec \
 	test test-backend test-frontend lint lint-backend lint-frontend fix check check-fast \
 	admin export-user delete-user build-frontend e2e lighthouse mutation hooks hook-pre-commit lint-repo test-guard deps-check \
 	install install-backend install-frontend audit licence-check secrets-scan selftest images \
-	mutation-backend mutation-frontend ansible-image provision-check provision-bootstrap provision lint-infra
+	mutation-backend mutation-frontend ansible-image provision-check provision-bootstrap provision lint-infra zap-baseline
 
 help: ## Show this list
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -168,6 +169,10 @@ provision-bootstrap: provision-check ansible-image ## First run on a new server 
 
 provision: provision-check ansible-image ## Set up the server over the tailnet (asks the sudo password)
 	$(ANSIBLE_RUN) ansible-playbook site.yml --ask-become-pass
+
+zap-baseline: ## Passive security scan of a site: make zap-baseline URL=https://... (ZAP_BASIC_AUTH=user:pass)
+	@test -n "$(URL)" || { echo "Usage: make zap-baseline URL=https://..."; exit 1; }
+	bash scripts/zap-baseline.sh "$(URL)"
 
 lint-infra: ansible-image ## Check the Ansible files (ansible-lint, syntax)
 	docker run --rm --user "$(HOST_UID):$(HOST_GID)" -v "$(CURDIR)/infra/ansible":/infra/ansible \
